@@ -61,8 +61,9 @@
                       <input 
                         type="text" 
                         v-model="teamSearch"
-                        @focus="showTeamDropdown = true"
-                        placeholder="Select any teams they are on"
+                        @focus="handleTeamFocus"
+                        @blur="handleTeamBlur"
+                        :placeholder="showTeamPlaceholder ? 'Select any teams they are on' : ''"
                       >
                     </div>
                     <div v-if="showTeamDropdown" class="team-dropdown">
@@ -402,6 +403,14 @@
                       <h4>App level permissions</h4>
                       <p class="section-description">Set permissions for specific apps.</p>
 
+                      <!-- Inside the app level permissions section -->
+                      <div v-if="unusedApps.length > 0" class="app-info">
+                        <span class="info-icon">i</span>
+                        <span>
+                          <strong class="app-count" :data-tooltip="'Apps: ' + unusedAppsList">{{ unusedApps.length }} {{ unusedApps.length === 1 ? 'app' : 'apps' }}</strong><span class="info-text">{{ unusedApps.length === 1 ? ' is' : ' are' }} not included in any permission set and will, by default, have <strong>Viewer</strong> access.</span>
+                        </span>
+                      </div>
+
                       <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
                         <div class="form-group">
                           <label>Apps <span class="required">*</span></label>
@@ -437,7 +446,7 @@
                                 v-for="app in filteredApps" 
                                 :key="app.id"
                                 class="team-option"
-                                @click.stop="selectApp(app, permissionSet.id)"
+                                @click.stop="toggleApp(app, permissionSet.id)"
                                 :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
                               >
                                 <div class="checkbox-option">
@@ -899,6 +908,14 @@
                     <h4>App level permissions</h4>
                     <p class="section-description">Set permissions for specific apps.</p>
 
+                    <!-- Inside the app level permissions section -->
+                    <div v-if="unusedApps.length > 0" class="app-info">
+                      <span class="info-icon">i</span>
+                      <span>
+                        <strong class="app-count" :data-tooltip="'Apps: ' + unusedAppsList">{{ unusedApps.length }} {{ unusedApps.length === 1 ? 'app' : 'apps' }}</strong><span class="info-text">{{ unusedApps.length === 1 ? ' is' : ' are' }} not included in any permission set and will, by default, have <strong>Viewer</strong> access.</span>
+                      </span>
+                    </div>
+
                     <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
                       <div class="form-group">
                         <label>Apps <span class="required">*</span></label>
@@ -934,7 +951,7 @@
                               v-for="app in filteredApps" 
                               :key="app.id"
                               class="team-option"
-                              @click.stop="selectApp(app, permissionSet.id)"
+                              @click.stop="toggleApp(app, permissionSet.id)"
                               :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
                             >
                               <div class="checkbox-option">
@@ -1350,7 +1367,10 @@ export default {
           listen: [],
           roadmaps: []
         }
-      }]
+      }],
+      showTeamPlaceholder: true,
+      // Add new data property for app placeholders
+      appPlaceholders: {},
     }
   },
   computed: {
@@ -1421,6 +1441,13 @@ export default {
       }
 
       return true;
+    },
+    unusedApps() {
+      const selectedAppIds = this.permissionSets.flatMap(set => set.selectedApps);
+      return this.appOptions.filter(app => !selectedAppIds.includes(app.id));
+    },
+    unusedAppsList() {
+      return this.unusedApps.map(app => app.name).join(', ');
     }
   },
   methods: {
@@ -1516,11 +1543,23 @@ export default {
     toggleAppRoleDetails() {
       this.showAppRoleDetails = !this.showAppRoleDetails;
     },
-    selectApp(app, permissionSetId) {
-      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
-      if (permissionSet && !permissionSet.selectedApps.includes(app.id)) {
-        permissionSet.selectedApps.push(app.id);
+    toggleApp(app, permissionSetId) {
+      if (this.isAppSelectedInOtherSet(app.id, permissionSetId)) {
+        return;
       }
+
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (!permissionSet) return;
+
+      const index = permissionSet.selectedApps.indexOf(app.id);
+      if (index === -1) {
+        permissionSet.selectedApps.push(app.id);
+      } else {
+        permissionSet.selectedApps.splice(index, 1);
+      }
+      
+      // Update placeholder visibility after toggling
+      this.appPlaceholders[permissionSetId] = !permissionSet.selectedApps.length;
     },
     removeApp(appId, permissionSetId) {
       const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
@@ -1530,23 +1569,20 @@ export default {
     },
     closeTeamDropdown() {
       this.showTeamDropdown = false;
+      this.showTeamPlaceholder = this.selectedTeams.length === 0;
     },
     showAppDropdown(permissionSetId) {
-      // Close all other dropdowns
-      Object.keys(this.openAppDropdowns).forEach(key => {
-        this.openAppDropdowns[key] = false;
-      });
-      // Open this dropdown
       this.openAppDropdowns[permissionSetId] = true;
-      this.activePermissionSetId = permissionSetId;
+      this.appPlaceholders[permissionSetId] = true;
     },
     closeAppDropdown(permissionSetId) {
       this.openAppDropdowns[permissionSetId] = false;
     },
     handleClickOutside(permissionSetId) {
       this.openAppDropdowns[permissionSetId] = false;
-      this.activePermissionSetId = null;
-      this.appFilter = '';
+      // Update placeholder visibility based on selected apps
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      this.appPlaceholders[permissionSetId] = !permissionSet?.selectedApps?.length;
     },
     addPermissionSet() {
       const newSet = {
@@ -1733,10 +1769,7 @@ export default {
       }
     },
     getAppInputPlaceholder(permissionSet) {
-      if (!permissionSet.selectedApps || permissionSet.selectedApps.length === 0) {
-        return 'Select apps';
-      }
-      return ''; // Empty placeholder when apps are selected
+      return this.appPlaceholders[permissionSet.id] ? 'Select apps to set permissions for' : '';
     },
     getAppName(appId) {
       const app = this.appOptions.find(a => a.id === appId);
@@ -1745,7 +1778,16 @@ export default {
     getAppType(appId) {
       const app = this.appOptions.find(a => a.id === appId);
       return app?.type || 'desktop'; // Default to desktop if type not specified
-    }
+    },
+    handleTeamFocus() {
+      this.showTeamDropdown = true;
+      this.showTeamPlaceholder = true;
+    },
+    handleTeamBlur() {
+      setTimeout(() => {
+        this.showTeamPlaceholder = this.selectedTeams.length === 0;
+      }, 100);
+    },
   },
   mounted() {
     // Close dropdowns when clicking outside
@@ -1787,6 +1829,12 @@ export default {
         document.removeEventListener('click', el.clickOutsideEvent);
       }
     }
+  },
+  created() {
+    // Initialize app placeholders
+    this.permissionSets.forEach(set => {
+      this.appPlaceholders[set.id] = true;
+    });
   }
 }
 </script>
@@ -2447,7 +2495,6 @@ h3 {
 .role-option {
   flex: 0 0 calc(33.333% - 34px);
   min-width: 0;
-
   padding: 8px 12px;
   border: 1px solid #E2E8F0;
   border-radius: 4px;
@@ -2499,118 +2546,15 @@ h3 {
   color: white;
 }
 
-.app-info strong {
-  font-weight: 600;
-  color: #128297;
-}
-
-/* Remove old spacing styles */
-.permissions-section + .permissions-section {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
-}
-
-/* Add styles for disabled state */
-.role-option input[type="checkbox"]:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.role-option:has(input:disabled) {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.role-option:has(input:disabled) span {
-  cursor: not-allowed;
-}
-
-.role-details {
-  position: static;
-  width: 100%;
-  box-shadow: none;
-  border: none;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed #E2E8F0;
-}
-
-.role-details-content {
-  padding: 0;
-}
-
-.role-name {
-  display: none;
-}
-
-.permissions-list {
-  gap: 8px;
-  margin-top: 0px;
-  padding-inline-start: 32px;
-}
-
-.permission-item {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* Update expand link style */
-.expand-link:hover {
-  text-decoration: underline;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.checkbox-row input[type="checkbox"] {
-  flex: 0 0 16px;
-}
-
-.checkbox-row span {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.permission-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-}
-
-/* Remove the old background styles */
-.wizard-card:first-child {
-  position: relative;
-}
-
-/* Update to target only the card body */
-.wizard-card:first-child .card-body {
-  position: relative;
-  overflow: visible;
-  z-index: 1;
-  background-image: url('@/assets/Add user shape.png');
-  background-repeat: no-repeat;
-  background-position: top right;
+.info-text {
+  color: #2D3748;
 }
 
 .app-count {
-  color: #2C5282;
-  font-weight: 600;
   cursor: help;
-  border-bottom: 1px dashed #4299E1;
   position: relative;
-}
-
-/* Tooltip styles */
-.app-count[data-tooltip] {
-  position: relative;
+  color: #128297;
+  font-weight: bold;
 }
 
 .app-count[data-tooltip]::before {
@@ -2620,30 +2564,17 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
   padding: 8px 12px;
-  background: rgb(26, 32, 44);
+  background: #1A202C;
   color: white;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: normal;
   border-radius: 4px;
   white-space: normal;
-  line-height: 1.5;
-  max-width: 300px;
-  text-align: left;
-  width: max-content;
+  width: 300px;
   opacity: 0;
   visibility: hidden;
   transition: all 0.2s ease;
-  z-index: 10;
-}
-
-/* Style for the "Apps:" prefix */
-.app-count[data-tooltip]::before {
-  content: "Apps: " attr(data-tooltip);
-  font-weight: 400;
-}
-
-.app-count[data-tooltip]::before strong {
-  font-weight: 600;
+  z-index: 1000;
 }
 
 .app-count[data-tooltip]::after {
@@ -2658,6 +2589,7 @@ h3 {
   opacity: 0;
   visibility: hidden;
   transition: all 0.2s ease;
+  z-index: 1000;
 }
 
 .app-count:hover[data-tooltip]::before,
@@ -2666,23 +2598,6 @@ h3 {
   visibility: visible;
 }
 
-/* Add styles for checked checkboxes */
-.role-option input[type="checkbox"]:checked {
-  accent-color: #128297;
-}
-
-/* Update hover state for checkboxes */
-.role-option input[type="checkbox"]:not(:disabled):hover {
-  cursor: pointer;
-}
-
-/* Keep existing role-option checked state */
-.role-option:has(input:checked) {
-  background: white;
-  border-color: #128297;
-}
-
-/* Add styles for checkbox options */
 .checkbox-option {
   display: flex;
   align-items: center;
@@ -2878,9 +2793,10 @@ h3 {
 }
 
 .app-pills {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
+  padding: 4px;
 }
 
 .app-pill {
@@ -3080,5 +2996,61 @@ h3 {
   display: flex;
   align-items: center;
   width: 100%;
+}
+
+/* Update role option styles */
+.role-option {
+  flex: 0 0 calc(33.333% - 34px);
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #2D3748;
+  background: white;
+}
+
+/* Fix checkbox row spacing */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.checkbox-row input[type="checkbox"] {
+  margin: 0;
+  flex: 0 0 16px;
+  height: 16px;
+}
+
+.checkbox-row span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Remove conflicting styles */
+.role-option input[type="checkbox"] {
+  flex: none;
+}
+
+.role-option span {
+  flex: none;
+}
+
+/* Remove extra spacing under app pills */
+.app-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+/* Keep other app-pills styles consistent */
+.view-only-info + .permissions-wrapper .app-pills {
+  padding: 4px;
 }
 </style> 
