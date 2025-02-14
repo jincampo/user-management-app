@@ -1495,14 +1495,13 @@ export default {
       this.showUserDropdown = false;
       this.handleUserSelected(user);
 
-      // Add delay before scrolling
+      // Add delay before scrolling down
       setTimeout(() => {
         const wizardContent = document.querySelector('.wizard-content');
-        const permissionsSection = document.querySelector('.permissions-wrapper');
-        if (wizardContent && permissionsSection) {
-          const scrollTarget = permissionsSection.offsetTop - 100; // Add some offset
+        if (wizardContent) {
+          const currentScroll = wizardContent.scrollTop;
           wizardContent.scrollTo({
-            top: scrollTarget,
+            top: currentScroll + 450, // Changed from 300 to 450
             behavior: 'smooth'
           });
         }
