@@ -62,17 +62,23 @@
                         type="text" 
                         v-model="teamSearch"
                         @focus="showTeamDropdown = true"
-                        @input="filterTeams"
                         placeholder="Select any teams they are on"
-                        readonly
                       >
                     </div>
                     <div v-if="showTeamDropdown" class="team-dropdown">
+                      <div class="dropdown-search">
+                        <input 
+                          type="text" 
+                          v-model="teamFilter"
+                          placeholder="Search teams..."
+                          @click.stop
+                        >
+                      </div>
                       <div 
-                        v-for="team in availableTeams" 
+                        v-for="team in filteredTeams" 
                         :key="team.id"
                         class="team-option"
-                        @click="selectTeam(team)"
+                        @click.stop="selectTeam(team)"
                       >
                         <div class="checkbox-option">
                           <input 
@@ -112,7 +118,7 @@
             </div>
           </div>
 
-          <!-- Add new card for copy user selection -->
+          <!-- Copy user section -->
           <div v-if="selectedPermission === 'copy'" class="wizard-card">
             <h3>Select permissions</h3>
             <div class="card-body">
@@ -145,16 +151,9 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Update Start from scratch section -->
-          <template v-if="selectedPermission === 'scratch'">
-            <div class="wizard-card">
-              <h3>Select permissions</h3>
-              <div class="card-body">
-                <div class="form-container">
+                <!-- Show permissions section when user is selected -->
+                <template v-if="selectedUser">
                   <div class="permissions-wrapper">
                     <!-- Subscription section -->
                     <div class="permissions-section">
@@ -176,7 +175,7 @@
                             <div class="role-content">
                               <span class="role-title">Segments and reports</span>
                               <div class="role-options">
-                                <label class="role-option">
+                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="segments" value="viewer" checked disabled>
                                     <span>Viewer</span>
@@ -244,7 +243,7 @@
                             <div class="role-content">
                               <span class="role-title">Listen</span>
                               <div class="role-options">
-                                <label class="role-option">
+                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
                                   <div class="checkbox-row">
                                     <input 
                                       type="checkbox" 
@@ -324,7 +323,7 @@
                             <div class="role-content">
                               <span class="role-title">Roadmaps</span>
                               <div class="role-options">
-                                <label class="role-option">
+                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
                                   <div class="checkbox-row">
                                     <input 
                                       type="checkbox" 
@@ -398,50 +397,538 @@
                       </div>
                     </div>
 
-                    <!-- Application section -->
+                    <!-- App level section -->
                     <div class="permissions-section">
                       <h4>App level permissions</h4>
-                      <p class="section-description">Create permission sets below for all features that could be applied on an application basis.</p>
+                      <p class="section-description">Set permissions for specific apps.</p>
 
-                      <div class="app-info">
-                        <div class="info-icon">i</div>
-                        <span>
-                          <span class="app-count" data-tooltip="Apps: Mobile App, Web Dashboard, Analytics Portal, Customer Portal, Admin Console, Marketing Site, Help Center, API Gateway, Sales Platform, Developer Tools, iOS App, Android App, Desktop App, Partner Portal, Internal Tools, E-commerce Platform, Support Dashboard, Billing Portal, Integration Hub, Status Page">
-                            20 apps
-                          </span> 
-                          are not included in any permission set and will, by default, have <strong>Viewer</strong> access.
-                        </span>
+                      <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
+                        <div class="form-group">
+                          <label>Apps <span class="required">*</span></label>
+                          <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
+                            <div class="select-wrapper">
+                              <div class="app-pills">
+                                <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                  {{ getAppName(appId) }}
+                                  <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
+                                </span>
+                              </div>
+                              <input 
+                                type="text" 
+                                :placeholder="getAppInputPlaceholder(permissionSet)"
+                                @focus="() => showAppDropdown(permissionSet.id)"
+                                readonly
+                              >
+                            </div>
+                            <div v-if="openAppDropdowns[permissionSet.id]" class="team-dropdown">
+                              <div class="dropdown-search">
+                                <input 
+                                  type="text" 
+                                  v-model="appFilter"
+                                  placeholder="Search apps..."
+                                  @click.stop
+                                >
+                              </div>
+                              <div 
+                                v-for="app in filteredApps" 
+                                :key="app.id"
+                                class="team-option"
+                                @click.stop="selectApp(app, permissionSet.id)"
+                                :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
+                              >
+                                <div class="checkbox-option">
+                                  <input 
+                                    type="checkbox" 
+                                    :checked="permissionSet.selectedApps.includes(app.id)"
+                                    @click.stop
+                                  >
+                                  <span>{{ app.name }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Role options -->
+                        <div class="role-options">
+                          <div class="role-group">
+                            <div class="role-header">
+                              <div class="icon-wrapper">
+                                <img src="@/assets/guides.png" class="role-icon" alt="Guides icon" />
+                              </div>
+                              <div class="divider"></div>
+                              <div class="role-content">
+                                <span class="role-title">Guides</span>
+                                <div class="role-options">
+                                  <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="viewer" checked disabled>
+                                      <span>Viewer</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">View all guides and resource center content</li>
+                                            <li class="permission-item">Access guide analytics</li>
+                                            <li class="permission-item">View guide settings</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+                                  <label class="role-option">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="resource-center-author">
+                                      <span>Resource center author</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                          <li class="permission-item">Create and edit resource center content</li>
+                                          <li class="permission-item">Manage resource center categories</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </label>
+                                  <label class="role-option">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="resource-center-publisher">
+                                      <span>Resource center publisher</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>resource center author</em></li>
+                                          <li class="permission-item">Publish resource center content</li>
+                                          <li class="permission-item">Manage resource center publishing workflow</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </label>
+                                  <label class="role-option">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="creator">
+                                      <span>Creator</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                            <li class="permission-item">Create and edit guides</li>
+                                            <li class="permission-item">Share guides with other users</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+                                  <label class="role-option">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="publisher">
+                                      <span>Publisher</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item inherited">All permissions of a <em>guides creator</em></li>
+                                            <li class="permission-item">Publish guides</li>
+                                            <li class="permission-item">Manage guide publishing workflow</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+                                  <label class="role-option">
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="content-editor">
+                                      <span>Content editor</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                            <li class="permission-item">Edit guide content</li>
+                                            <li class="permission-item">Manage guide content workflow</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Add back the tagging section after the guides section -->
+                        <div class="role-group">
+                          <div class="role-header">
+                            <div class="icon-wrapper">
+                              <img src="@/assets/tagging.png" class="role-icon" alt="Tagging icon" />
+                            </div>
+                            <div class="divider"></div>
+                            <div class="role-content">
+                              <span class="role-title">Tagging</span>
+                              <div class="role-options">
+                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                  <div class="checkbox-row">
+                                    <input type="checkbox" name="tagging" value="viewer" checked disabled>
+                                    <span>Viewer</span>
+                                  </div>
+                                  <div class="role-details" v-if="showAppRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item">View all tags</li>
+                                          <li class="permission-item">Access tag analytics</li>
+                                          <li class="permission-item">View tag settings</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </label>
+
+                                <label class="role-option">
+                                  <div class="checkbox-row">
+                                    <input type="checkbox" name="tagging" value="editor">
+                                    <span>Editor</span>
+                                  </div>
+                                  <div class="role-details" v-if="showAppRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>tagging viewer</em></li>
+                                          <li class="permission-item">Create and edit tags</li>
+                                          <li class="permission-item">Manage tag categories</li>
+                                          <li class="permission-item">Configure tag settings</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Only show add button on last permission set -->
+                        <div v-if="index === permissionSets.length - 1" class="permission-set-divider">
+                          <div class="divider-container">
+                            <div class="divider-line"></div>
+                          </div>
+                          <button 
+                            class="add-permission-set" 
+                            :class="{ 'disabled': !canAddPermissionSet }"
+                            :disabled="!canAddPermissionSet"
+                            data-tooltip="Add apps to the first permission set before adding a new one"
+                            @click="addPermissionSet"
+                          >
+                            + Add another permission set
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Start from scratch section -->
+          <div v-if="selectedPermission === 'scratch'" class="wizard-card">
+            <h3>Select permissions</h3>
+            <div class="card-body">
+              <div class="form-container">
+                <div class="permissions-wrapper">
+                  <!-- Subscription section -->
+                  <div class="permissions-section">
+                    <h4>Subscription level permissions</h4>
+                    <p class="section-description">Set permissions for all subscription level features.</p>
+
+                    <div class="roles-section">
+                      <h5>Roles by category</h5>
+                      <a class="expand-link" @click="toggleSubscriptionRoleDetails">
+                        {{ showSubscriptionRoleDetails ? 'Collapse role details' : 'Expand role details' }}
+                      </a>
+
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/segments.png" class="role-icon" alt="Segments icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Segments and reports</span>
+                            <div class="role-options">
+                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="viewer" checked disabled>
+                                  <span>Viewer</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">Can view segments.</li>
+                                        <li class="permission-item">Can view reports.</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-header">
+                                    <span class="role-name">Editor</span>
+                                  </div>
+                                  <div class="role-details-body">
+                                    <ul class="permissions-list">
+                                      <li class="permission-item">View all segments and reports</li>
+                                      <li class="permission-item">Export segment data</li>
+                                      <li class="permission-item">Access segment analytics</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="verifier">
+                                  <span>Verifier</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Verifier</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>segments viewer</em></li>
+                                        <li class="permission-item">Verify and approve segments</li>
+                                        <li class="permission-item">Manage segment approval workflow</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/listen.png" class="role-icon" alt="Listen icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Listen</span>
+                            <div class="role-options">
+                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <div class="checkbox-row">
+                                  <input 
+                                    type="checkbox" 
+                                    name="listen" 
+                                    value="viewer"
+                                    checked
+                                    disabled
+                                  >
+                                  <span>Viewer</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-header">
+                                    <span class="role-name">Viewer</span>
+                                  </div>
+                                  <div class="role-details-body">
+                                    <ul class="permissions-list">
+                                      <li class="permission-item">View all feedback items</li>
+                                      <li class="permission-item">Access feedback analytics</li>
+                                      <li class="permission-item">View visitor votes and interactions</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="listen" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Manager</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item">Manage feedback settings</li>
+                                        <li class="permission-item">Delete any feedback items</li>
+                                        <li class="permission-item">Edit any feedback items</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="listen" value="manager">
+                                  <span>Manager</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Manager</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item">Manage feedback settings</li>
+                                        <li class="permission-item">Delete any feedback items</li>
+                                        <li class="permission-item">Edit any feedback items</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/roadmaps.png" class="role-icon" alt="Roadmaps icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Roadmaps</span>
+                            <div class="role-options">
+                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <div class="checkbox-row">
+                                  <input 
+                                    type="checkbox" 
+                                    name="roadmaps" 
+                                    value="viewer"
+                                    checked
+                                    disabled
+                                  >
+                                  <span>Viewer</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Viewer</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">View all roadmaps</li>
+                                        <li class="permission-item">Access roadmap analytics</li>
+                                        <li class="permission-item">View roadmap settings</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="roadmaps" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Viewer</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">View all roadmaps</li>
+                                        <li class="permission-item">Access roadmap analytics</li>
+                                        <li class="permission-item">View roadmap settings</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="roadmaps" value="manager">
+                                  <span>Manager</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-header">
+                                      <span class="role-name">Manager</span>
+                                    </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>roadmaps editor</em></li>
+                                        <li class="permission-item">Manage roadmap settings</li>
+                                        <li class="permission-item">Control roadmap visibility</li>
+                                        <li class="permission-item">Delete any roadmaps</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- App level section -->
+                  <div class="permissions-section">
+                    <h4>App level permissions</h4>
+                    <p class="section-description">Set permissions for specific apps.</p>
+
+                    <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
                       <div class="form-group">
                         <label>Apps <span class="required">*</span></label>
-                        <div class="select-container" v-click-outside="closeAppDropdown">
+                        <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
                           <div class="select-wrapper">
-                            <div class="team-pills">
-                              <span v-for="appId in selectedApps" :key="appId" class="team-pill">
-                                {{ appOptions.find(a => a.id === appId)?.name }}
-                                <button class="remove-pill" @click.stop="removeApp(appId)">×</button>
+                            <div class="app-pills">
+                              <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                {{ getAppName(appId) }}
+                                <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
                               </span>
                             </div>
                             <input 
                               type="text" 
-                              v-model="appSearch"
-                              @focus="showAppDropdown = true"
-                              placeholder="Select apps"
+                              :placeholder="getAppInputPlaceholder(permissionSet)"
+                              @focus="() => showAppDropdown(permissionSet.id)"
                               readonly
                             >
                           </div>
-                          <div v-if="showAppDropdown" class="team-dropdown">
+                          <div v-if="openAppDropdowns[permissionSet.id]" class="team-dropdown">
+                            <div class="dropdown-search">
+                              <input 
+                                type="text" 
+                                v-model="appFilter"
+                                placeholder="Search apps..."
+                                @click.stop
+                              >
+                            </div>
                             <div 
-                              v-for="app in availableApps" 
+                              v-for="app in filteredApps" 
                               :key="app.id"
                               class="team-option"
-                              @click="selectApp(app)"
+                              @click.stop="selectApp(app, permissionSet.id)"
+                              :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
                             >
                               <div class="checkbox-option">
                                 <input 
                                   type="checkbox" 
-                                  :checked="selectedApps.includes(app.id)"
+                                  :checked="permissionSet.selectedApps.includes(app.id)"
                                   @click.stop
                                 >
                                 <span>{{ app.name }}</span>
@@ -451,12 +938,8 @@
                         </div>
                       </div>
 
-                      <div class="roles-section">
-                        <h5>Roles by category</h5>
-                        <a class="expand-link" @click="toggleAppRoleDetails">
-                          {{ showAppRoleDetails ? 'Collapse role details' : 'Expand role details' }}
-                        </a>
-
+                      <!-- Role options -->
+                      <div class="role-options">
                         <div class="role-group">
                           <div class="role-header">
                             <div class="icon-wrapper">
@@ -466,7 +949,7 @@
                             <div class="role-content">
                               <span class="role-title">Guides</span>
                               <div class="role-options">
-                                <label class="role-option">
+                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="guides" value="viewer" checked disabled>
                                     <span>Viewer</span>
@@ -489,14 +972,12 @@
                                     <span>Resource center author</span>
                                   </div>
                                   <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
-                                          <li class="permission-item">Create and edit resource center content</li>
-                                          <li class="permission-item">Manage resource center categories</li>
-                                        </ul>
-                                      </div>
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                        <li class="permission-item">Create and edit resource center content</li>
+                                        <li class="permission-item">Manage resource center categories</li>
+                                      </ul>
                                     </div>
                                   </div>
                                 </label>
@@ -582,7 +1063,7 @@
                           <div class="role-content">
                             <span class="role-title">Tagging</span>
                             <div class="role-options">
-                              <label class="role-option">
+                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
                                 <div class="checkbox-row">
                                   <input type="checkbox" name="tagging" value="viewer" checked disabled>
                                   <span>Viewer</span>
@@ -622,39 +1103,80 @@
                           </div>
                         </div>
                       </div>
+
+                      <!-- Only show add button on last permission set -->
+                      <div v-if="index === permissionSets.length - 1" class="permission-set-divider">
+                        <div class="divider-container">
+                          <div class="divider-line"></div>
+                        </div>
+                        <button 
+                          class="add-permission-set" 
+                          :class="{ 'disabled': !canAddPermissionSet }"
+                          :disabled="!canAddPermissionSet"
+                          data-tooltip="Add apps to the first permission set before adding a new one"
+                          @click="addPermissionSet"
+                        >
+                          + Add another permission set
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </template>
+          </div>
 
+          <!-- Admin section -->
           <template v-if="selectedPermission === 'admin'">
             <div class="wizard-card">
               <h3>Review admin privileges</h3>
               <div class="card-body">
                 <div class="form-container">
                   <p class="permission-info">
-                    Subscription admins have full access to the Pendo Subscription. This includes all Application settings, Guide Settings, and full Analytics capabilities.
+                    Subscription admins have <b>full access</b> to the Pendo Subscription.<br>
+                    This includes all Application settings, Guide Settings, and full Analytics capabilities.
                   </p>
                 </div>
               </div>
             </div>
           </template>
 
-          <!-- Add view-only privileges card -->
-          <template v-if="selectedPermission === 'view'">
-            <div class="wizard-card">
-              <h3>Review view-only privileges</h3>
-              <div class="card-body">
-                <div class="form-container">
-                  <p class="permission-info">
-                    View-only users can access analytics and view guides, but cannot make changes to any settings or configurations.
-                  </p>
+
+
+          <!-- View-only section -->
+          <div v-if="selectedPermission === 'view'" class="wizard-card">
+            <h3>Review View-only permissions</h3>
+            <div class="card-body">
+              <div class="form-container">
+                <p class="view-only-info">Users have <b>view-only</b> access to all apps in your subscription.</p>
+
+                <div class="permissions-wrapper">
+                  <!-- Apps section wrapper -->
+                  <div class="section-wrapper">
+                    <div class="section-title">Apps:</div>
+                    <div class="app-pills">
+                      <span v-for="app in appOptions" :key="app.id" class="app-pill">
+                        {{ app.name }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Roles section wrapper -->
+                  <div class="section-wrapper">
+                    <div class="section-title">Roles:</div>
+                    <div class="role-pills">
+                      <span class="role-pill">Guides: Viewer</span>
+                      <span class="role-pill">Listen: Viewer</span>
+                      <span class="role-pill">Reports: Viewer</span>
+                      <span class="role-pill">Roadmaps: Viewer</span>
+                      <span class="role-pill">Segments: Viewer</span>
+                      <span class="role-pill">Tagging: Viewer</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </template>
+          </div>
         </div>
 
         <div class="wizard-footer">
@@ -704,7 +1226,18 @@ export default {
         'robert.white@acme.co',
         'patricia.moore@acme.co'
       ],
+      teamSearch: '',
+      teamFilter: '',
+      appFilter: '',
+      showTeamDropdown: false,
       selectedTeams: [],
+      teamOptions: [
+        { id: 1, name: 'Product Team' },
+        { id: 2, name: 'Engineering Team' },
+        { id: 3, name: 'Marketing Team' },
+        { id: 4, name: 'Sales Team' },
+        { id: 5, name: 'Customer Success' }
+      ],
       showInputPlaceholder: true,
       selectedPermission: null,
       permissionOptions: [
@@ -713,6 +1246,12 @@ export default {
           icon: Key,
           title: 'Make subscription admin',
           description: 'Admins have full access to your subscription, including settings and analytics.'
+        },
+        {
+          id: 'view',
+          icon: Eye,
+          title: 'Make view-only',
+          description: 'Give only viewer permissions to all apps in your subscription.'
         },
         {
           id: 'copy',
@@ -725,68 +1264,10 @@ export default {
           icon: Pencil,
           title: 'Start from scratch',
           description: "Set a user's permissions from scratch, including app-level permissions."
-        },
-        {
-          id: 'view',
-          icon: Eye,
-          title: 'Make view-only',
-          description: 'Give only viewer permissions to all apps in your subscription.'
         }
       ],
-      teamOptions: [
-        {
-          id: 'eng',
-          name: 'Engineering'
-        },
-        {
-          id: 'product',
-          name: 'Product Management'
-        },
-        {
-          id: 'design',
-          name: 'Design'
-        },
-        {
-          id: 'sales',
-          name: 'Sales'
-        },
-        {
-          id: 'marketing',
-          name: 'Marketing'
-        },
-        {
-          id: 'support',
-          name: 'Customer Support'
-        },
-        {
-          id: 'success',
-          name: 'Customer Success'
-        },
-        {
-          id: 'finance',
-          name: 'Finance'
-        },
-        {
-          id: 'hr',
-          name: 'Human Resources'
-        },
-        {
-          id: 'legal',
-          name: 'Legal'
-        },
-        {
-          id: 'ops',
-          name: 'Operations'
-        },
-        {
-          id: 'security',
-          name: 'Security'
-        }
-      ],
-      teamSearch: '',
-      showTeamDropdown: false,
-      userSearch: '',
       showUserDropdown: false,
+      userSearch: '',
       selectedUser: null,
       existingUsers: [
         {
@@ -818,8 +1299,7 @@ export default {
       showSubscriptionRoleDetails: false,
       showAppRoleDetails: false,
       appSearch: '',
-      showAppDropdown: false,
-      selectedApps: [],
+      openAppDropdowns: {},
       appOptions: [
         { id: 1, name: 'Mobile App' },
         { id: 2, name: 'Web Dashboard' },
@@ -841,10 +1321,25 @@ export default {
         { id: 18, name: 'Billing Portal' },
         { id: 19, name: 'Integration Hub' },
         { id: 20, name: 'Status Page' }
-      ]
+      ],
+      permissionSets: [{
+        id: Math.random(),
+        selectedApps: [],
+        roles: {
+          guides: [],
+          tagging: [],
+          segments: [],
+          listen: [],
+          roadmaps: []
+        }
+      }]
     }
   },
   computed: {
+    inputPlaceholder() {
+      if (!this.showInputPlaceholder) return '';
+      return 'Enter emails of users you want to add';
+    },
     filteredEmails() {
       if (!this.emailSearch) return this.emailOptions;
       const search = this.emailSearch.toLowerCase();
@@ -857,16 +1352,31 @@ export default {
         !this.selectedEmails.includes(email)
       );
     },
-    inputPlaceholder() {
-      if (!this.showInputPlaceholder) return '';
-      return 'Enter emails of users you want to add';
-    },
-    availableTeams() {
-      return this.teamOptions.filter(team => !this.selectedTeams.includes(team.id));
-    },
     isValidEmail() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return this.emailSearch && emailRegex.test(this.emailSearch);
+    },
+    filteredTeams() {
+      if (!this.teamFilter) return this.teamOptions;
+      const search = this.teamFilter.toLowerCase();
+      return this.teamOptions.filter(team => 
+        team.name.toLowerCase().includes(search)
+      );
+    },
+    filteredApps() {
+      let apps = this.appOptions || [];
+      if (this.appFilter) {
+        const filter = this.appFilter.toLowerCase();
+        apps = apps.filter(app => 
+          app.name.toLowerCase().includes(filter)
+        );
+      }
+      return apps;
+    },
+    canAddPermissionSet() {
+      // Enable button only if first set has apps and not all apps are selected
+      const firstSet = this.permissionSets[0];
+      return firstSet.selectedApps.length > 0 && firstSet.selectedApps.length < this.appOptions.length;
     },
     canInvite() {
       // Check if at least one email is selected
@@ -884,15 +1394,15 @@ export default {
         return false;
       }
 
-      // If scratch option is selected, check if at least one app is selected
-      if (this.selectedPermission === 'scratch' && !this.selectedApps?.length) {
-        return false;
+      // If scratch option is selected, check if at least one app is selected in any permission set
+      if (this.selectedPermission === 'scratch') {
+        const hasSelectedApps = this.permissionSets.some(set => set.selectedApps.length > 0);
+        if (!hasSelectedApps) {
+          return false;
+        }
       }
 
       return true;
-    },
-    availableApps() {
-      return this.appOptions.filter(app => !this.selectedApps.includes(app.id));
     }
   },
   methods: {
@@ -956,14 +1466,16 @@ export default {
     selectTeam(team) {
       if (!this.selectedTeams.includes(team.id)) {
         this.selectedTeams.push(team.id);
+      } else {
+        // If already selected, remove it
+        const index = this.selectedTeams.indexOf(team.id);
+        if (index > -1) {
+          this.selectedTeams.splice(index, 1);
+        }
       }
-      this.teamSearch = '';
     },
     removeTeam(teamId) {
       this.selectedTeams = this.selectedTeams.filter(id => id !== teamId);
-    },
-    filterTeams() {
-      this.showTeamDropdown = true;
     },
     selectUser(user) {
       this.selectedUser = user;
@@ -978,23 +1490,233 @@ export default {
     toggleAppRoleDetails() {
       this.showAppRoleDetails = !this.showAppRoleDetails;
     },
-    selectApp(app) {
-      if (!this.selectedApps.includes(app.id)) {
-        this.selectedApps.push(app.id);
+    selectApp(app, permissionSetId) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (permissionSet && !permissionSet.selectedApps.includes(app.id)) {
+        permissionSet.selectedApps.push(app.id);
       }
-      this.showAppDropdown = false;
     },
-    removeApp(appId) {
-      const index = this.selectedApps.indexOf(appId);
-      if (index > -1) {
-        this.selectedApps.splice(index, 1);
+    removeApp(appId, permissionSetId) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (permissionSet) {
+        permissionSet.selectedApps = permissionSet.selectedApps.filter(id => id !== appId);
       }
     },
     closeTeamDropdown() {
       this.showTeamDropdown = false;
     },
-    closeAppDropdown() {
-      this.showAppDropdown = false;
+    showAppDropdown(permissionSetId) {
+      // Close all other dropdowns
+      Object.keys(this.openAppDropdowns).forEach(key => {
+        this.openAppDropdowns[key] = false;
+      });
+      // Open this dropdown
+      this.openAppDropdowns[permissionSetId] = true;
+      this.activePermissionSetId = permissionSetId;
+    },
+    closeAppDropdown(permissionSetId) {
+      this.openAppDropdowns[permissionSetId] = false;
+    },
+    handleClickOutside(permissionSetId) {
+      this.openAppDropdowns[permissionSetId] = false;
+      this.activePermissionSetId = null;
+      this.appFilter = '';
+    },
+    addPermissionSet() {
+      const newSet = {
+        id: Math.random(),
+        selectedApps: [],
+        roles: {
+          guides: [],
+          tagging: [],
+          segments: [],
+          listen: [],
+          roadmaps: []
+        }
+      };
+      
+      this.permissionSets.push(newSet);
+
+      // Scroll to the new permission set after it's added
+      this.$nextTick(() => {
+        const lastPermissionSet = document.querySelector(`.permissions-section > div:last-child`);
+        if (lastPermissionSet) {
+          const offset = 100; // Add offset to show more of the new section
+          const elementPosition = lastPermissionSet.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+    },
+    getUnselectedAppsCount(permissionSet) {
+      if (!permissionSet || !permissionSet.selectedApps) return this.appOptions.length;
+      return this.appOptions.length - permissionSet.selectedApps.length;
+    },
+    getUnselectedAppsTooltip(permissionSet) {
+      if (!permissionSet || !permissionSet.selectedApps) {
+        return 'Apps: ' + this.appOptions.map(app => app.name).join(', ');
+      }
+      const unselectedApps = this.appOptions
+        .filter(app => !permissionSet.selectedApps.includes(app.id))
+        .map(app => app.name)
+        .join(', ');
+      return `Apps: ${unselectedApps}`;
+    },
+    inviteUser() {
+      // Create new users from selected emails
+      const newUsers = this.selectedEmails.map(email => {
+        const id = Math.max(0, ...this.existingUsers.map(u => u.id)) + 1;
+        
+        const user = {
+          id,
+          email,
+          name: email.split('@')[0],
+          status: 'Pending',
+          role: this.selectedPermission === 'copy' ? 'Custom' : 'Custom',
+          teams: this.selectedTeams,
+          dateAdded: new Date().toISOString().split('T')[0],
+          permissionSets: []
+        };
+
+        if (this.selectedPermission === 'copy' && this.selectedUser) {
+          user.permissionSets = [...this.selectedUser.permissionSets];
+        }
+        
+        if (this.selectedPermission === 'scratch') {
+          user.permissionSets = this.permissionSets.map(set => ({
+            apps: [...set.selectedApps],
+            roles: {
+              guides: [...set.roles.guides],
+              tagging: [...set.roles.tagging]
+            }
+          }));
+        }
+
+        return user;
+      });
+
+      // Emit event to add users to the table
+      this.$emit('users-invited', newUsers);
+      
+      // Show toast notification
+      const userCount = newUsers.length;
+      const userList = newUsers.map(user => user.email).join(', ');
+      
+      this.$emit('show-toast', {
+        type: 'success',
+        message: `${userCount} ${userCount === 1 ? 'user' : 'users'} invited: ${userList}`
+      });
+      
+      // Close and reset
+      this.close();
+      this.resetForm();
+    },
+    resetForm() {
+      this.selectedEmails = [];
+      this.selectedTeams = [];
+      this.selectedPermission = null;
+      this.selectedUser = null;
+      this.permissionSets = [{
+        id: Math.random(),
+        selectedApps: [],
+        roles: {
+          guides: [],
+          tagging: [],
+          segments: [],
+          listen: [],
+          roadmaps: []
+        }
+      }];
+    },
+    isAppSelectedInOtherSet(appId, currentSetId) {
+      return this.permissionSets.some(set => 
+        set.id !== currentSetId && set.selectedApps.includes(appId)
+      );
+    },
+    handleUserSelected(selectedUser) {
+      if (!selectedUser) return;
+
+      // Initialize permission set with preselected roles
+      this.permissionSets = [{
+        id: Math.random(),
+        selectedApps: this.getRandomApps(3), // Select 3 random apps
+        roles: {
+          segments: ['verifier'],
+          listen: ['editor'],
+          roadmaps: ['manager'],
+          guides: ['publisher'],
+          tagging: ['editor']
+        }
+      }];
+
+      // Check all the appropriate role checkboxes
+      this.$nextTick(() => {
+        // Preselect subscription level roles
+        const subscriptionRoles = [
+          { category: 'segments', value: 'verifier' },
+          { category: 'listen', value: 'editor' },
+          { category: 'roadmaps', value: 'manager' }
+        ];
+
+        // Preselect app level roles
+        const appRoles = [
+          { category: 'guides', value: 'publisher' },
+          { category: 'tagging', value: 'editor' }
+        ];
+
+        // Check all role checkboxes
+        [...subscriptionRoles, ...appRoles].forEach(({ category, value }) => {
+          const checkbox = document.querySelector(`input[name="${category}"][value="${value}"]`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+      });
+    },
+
+    // Helper method to get random apps
+    getRandomApps(count) {
+      const availableApps = [...this.appOptions];
+      const selectedApps = [];
+      
+      while (selectedApps.length < count && availableApps.length > 0) {
+        const randomIndex = Math.floor(Math.random() * availableApps.length);
+        const [app] = availableApps.splice(randomIndex, 1);
+        selectedApps.push(app.id);
+      }
+      
+      return selectedApps;
+    },
+
+    // Helper method to handle role changes
+    handleRoleChange({ target, permissionSetId, category, roleType }) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (!permissionSet) return;
+
+      if (target.checked) {
+        if (!permissionSet.roles[category].includes(roleType)) {
+          permissionSet.roles[category].push(roleType);
+        }
+      } else {
+        const index = permissionSet.roles[category].indexOf(roleType);
+        if (index > -1) {
+          permissionSet.roles[category].splice(index, 1);
+        }
+      }
+    },
+    getAppInputPlaceholder(permissionSet) {
+      if (!permissionSet.selectedApps || permissionSet.selectedApps.length === 0) {
+        return 'Select apps';
+      }
+      return ''; // Empty placeholder when apps are selected
+    },
+    getAppName(appId) {
+      const app = this.appOptions.find(a => a.id === appId);
+      return app ? app.name : '';
     }
   },
   mounted() {
@@ -1015,6 +1737,11 @@ export default {
     isOpen(newValue) {
       if (!newValue) {
         this.selectedPermission = null;
+      }
+    },
+    selectedUser(newUser) {
+      if (newUser && this.selectedPermission === 'copy') {
+        this.handleUserSelected(newUser);
       }
     }
   },
@@ -1231,14 +1958,18 @@ h3 {
 }
 
 .invite-button {
-  background: #10B981;
+  background: #128297;
+  border: 1px solid #128297;
   color: white;
-  border: none;
-  padding: 12px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 8px 16px;
   border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.invite-button:hover {
+  background: #0F6B7B;
 }
 
 .invite-button:disabled {
@@ -1246,11 +1977,6 @@ h3 {
   border-color: #E2E8F0;
   color: #A0AEC0;
   cursor: not-allowed;
-}
-
-.invite-button:disabled:hover {
-  background: #E2E8F0;
-  border-color: #E2E8F0;
 }
 
 .slide-up-enter-active {
@@ -1364,7 +2090,8 @@ h3 {
   border: 1px solid #E2E8F0;
   border-top: none;
   border-radius: 0 0 4px 4px;
-  max-height: 200px;
+  max-height: 320px;
+  height: auto;
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -1494,15 +2221,36 @@ h3 {
 }
 
 .select-wrapper {
+  position: relative;
   border: 1px solid #E2E8F0;
   border-radius: 4px;
-  padding: 4px 8px;
   background: white;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-  min-height: 36px;
+  min-height: 36px; /* Reduced from 40px */
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex; /* Added */
+  align-items: center; /* Added */
+  flex-wrap: wrap; /* Added */
+  gap: 4px; /* Added */
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%234A5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.select-wrapper input {
+  border: none;
+  outline: none;
+  padding: 4px;
+  min-width: 120px; /* Added */
+  width: auto; /* Changed from 100% */
+  font-size: 14px;
+  color: #2D3748;
+  background: transparent;
+  flex: 1; /* Added */
+}
+
+.select-wrapper:focus-within {
+  border-color: #128297;
 }
 
 .team-pills {
@@ -1524,19 +2272,6 @@ h3 {
   height: 24px;
 }
 
-.select-wrapper input {
-  border: none;
-  outline: none;
-  padding: 4px;
-  min-width: 120px;
-  width: auto;
-  font-size: 14px;
-  flex: 1;
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%234A5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-}
-
 .team-dropdown {
   position: absolute;
   top: 100%;
@@ -1546,7 +2281,8 @@ h3 {
   border: 1px solid #E2E8F0;
   border-top: none;
   border-radius: 0 0 4px 4px;
-  max-height: 200px;
+  max-height: 320px;
+  height: auto;
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -1579,9 +2315,9 @@ h3 {
 }
 
 .permission-info {
-  margin: 0;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  margin: 0;
   color: #4A5568;
 }
 
@@ -1592,7 +2328,7 @@ h3 {
 .permissions-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 0px;
 }
 
 .permissions-section h4 {
@@ -1693,7 +2429,7 @@ h3 {
 }
 
 .role-option:has(input:checked) {
-  background: #E2FBFD;
+  background: white;
   border-color: #128297;
 }
 
@@ -1856,7 +2592,7 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
   padding: 8px 12px;
-  background: #1A202C;
+  background: rgb(26, 32, 44);
   color: white;
   font-size: 12px;
   font-weight: 400;
@@ -1914,7 +2650,7 @@ h3 {
 
 /* Keep existing role-option checked state */
 .role-option:has(input:checked) {
-  background: #E2FBFD;
+  background: white;
   border-color: #128297;
 }
 
@@ -1948,5 +2684,308 @@ h3 {
 
 .team-option:hover {
   background: #F7FAFC;
+}
+
+/* Add styles for search input */
+.dropdown-search {
+  padding: 8px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.dropdown-search input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.dropdown-search input:focus {
+  border-color: #128297;
+}
+
+/* Update tooltip styles for disabled viewer options */
+.role-option[data-tooltip] {
+  position: relative;
+}
+
+.role-option[data-tooltip]:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: #000000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+}
+
+.role-option[data-tooltip]:hover::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Update permission set divider styles */
+.permission-set-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+}
+
+.divider-container {
+  width: 100%;
+}
+
+.divider-line {
+  width: 100%;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.add-permission-set {
+  position: relative;
+  font-size: 14px;
+  color: #128297;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-permission-set:hover {
+  text-decoration: underline;
+}
+
+/* Add styles for multiple permission sets */
+.permission-sets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.team-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-option.disabled:hover {
+  background: none;
+}
+
+.team-option.disabled .checkbox-option {
+  cursor: not-allowed;
+}
+
+.team-option.disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+/* Add styles for permission set titles */
+.permission-set-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D3748;
+  margin: 24px 0 16px;
+}
+
+.add-permission-set.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-permission-set[data-tooltip] {
+  position: relative;
+}
+
+.add-permission-set[data-tooltip]:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: #000000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  visibility: visible;
+}
+
+.add-permission-set[data-tooltip]:hover::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+  z-index: 1000;
+  visibility: visible;
+}
+
+.app-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+.app-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #F7FAFC;  /* Changed from #EBF8FF */
+  border: 1px solid #E2E8F0;  /* Changed from #90CDF4 */
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4A5568;  /* Changed from #2C5282 */
+  max-width: 200px;
+}
+
+.app-pill .remove-pill {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #4A5568;  /* Changed from #2C5282 */
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-pill .remove-pill:hover {
+  color: #2D3748;  /* Changed from #1A365D */
+}
+
+.select-wrapper {
+  position: relative;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  background: white;
+  min-height: 40px;
+  padding: 4px 8px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%234A5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.select-wrapper input {
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 4px;
+  padding-right: 24px; /* Add space for the arrow */
+  font-size: 14px;
+  color: #2D3748;
+  background: transparent;
+}
+
+.select-wrapper:focus-within {
+  border-color: #128297;
+}
+
+.view-only-info {
+  font-size: 14px;
+  color: #2D3748;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 4px; /* Reduced from 12px */
+}
+
+.role-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: #F7FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4A5568;
+}
+
+/* Update app-pills for view-only section */
+.view-only-info + .permissions-wrapper .app-pill {
+  padding: 4px 8px;
+  background: #F7FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4A5568;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 4px; /* Reduced from 12px */
+}
+
+.app-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 4px 16px 4px; /* Bottom padding for space between sections */
+}
+
+.role-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+
+
+.section-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Spacing between title and pills */
+}
+
+/* Update spacing between sections */
+.permissions-wrapper > *:not(:last-child) {
+  margin-bottom: 0px;
 }
 </style> 
