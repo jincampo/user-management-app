@@ -119,7 +119,7 @@
           </div>
 
           <!-- Copy user section -->
-          <div v-if="selectedPermission === 'copy'" class="wizard-card">
+          <div v-if="selectedPermission === 'copy'" class="wizard-card" data-permission="copy">
             <h3>Select permissions</h3>
             <div class="card-body">
               <div class="form-container">
@@ -409,6 +409,10 @@
                             <div class="select-wrapper">
                               <div class="app-pills">
                                 <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                  <span class="app-icon">
+                                    <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
+                                    <Monitor v-else size="14" />
+                                  </span>
                                   {{ getAppName(appId) }}
                                   <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
                                 </span>
@@ -442,6 +446,10 @@
                                     :checked="permissionSet.selectedApps.includes(app.id)"
                                     @click.stop
                                   >
+                                  <span class="app-icon">
+                                    <Smartphone v-if="getAppType(app.id) === 'mobile'" size="14" />
+                                    <Monitor v-else size="14" />
+                                  </span>
                                   <span>{{ app.name }}</span>
                                 </div>
                               </div>
@@ -639,7 +647,7 @@
           </div>
 
           <!-- Start from scratch section -->
-          <div v-if="selectedPermission === 'scratch'" class="wizard-card">
+          <div v-if="selectedPermission === 'scratch'" class="wizard-card" data-permission="scratch">
             <h3>Select permissions</h3>
             <div class="card-body">
               <div class="form-container">
@@ -898,6 +906,10 @@
                           <div class="select-wrapper">
                             <div class="app-pills">
                               <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                <span class="app-icon">
+                                  <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
+                                  <Monitor v-else size="14" />
+                                </span>
                                 {{ getAppName(appId) }}
                                 <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
                               </span>
@@ -931,6 +943,10 @@
                                   :checked="permissionSet.selectedApps.includes(app.id)"
                                   @click.stop
                                 >
+                                <span class="app-icon">
+                                  <Smartphone v-if="getAppType(app.id) === 'mobile'" size="14" />
+                                  <Monitor v-else size="14" />
+                                </span>
                                 <span>{{ app.name }}</span>
                               </div>
                             </div>
@@ -1127,24 +1143,20 @@
           </div>
 
           <!-- Admin section -->
-          <template v-if="selectedPermission === 'admin'">
-            <div class="wizard-card">
-              <h3>Review admin privileges</h3>
-              <div class="card-body">
-                <div class="form-container">
-                  <p class="permission-info">
-                    Subscription admins have <b>full access</b> to the Pendo Subscription.<br>
-                    This includes all Application settings, Guide Settings, and full Analytics capabilities.
-                  </p>
-                </div>
+          <div v-if="selectedPermission === 'admin'" class="wizard-card" data-permission="admin">
+            <h3>Review admin privileges</h3>
+            <div class="card-body">
+              <div class="form-container">
+                <p class="permission-info">
+                  Subscription admins have <b>full access</b> to the Pendo Subscription.<br>
+                  This includes all Application settings, Guide Settings, and full Analytics capabilities.
+                </p>
               </div>
             </div>
-          </template>
-
-
+          </div>
 
           <!-- View-only section -->
-          <div v-if="selectedPermission === 'view'" class="wizard-card">
+          <div v-if="selectedPermission === 'view'" class="wizard-card" data-permission="view">
             <h3>Review View-only permissions</h3>
             <div class="card-body">
               <div class="form-container">
@@ -1156,6 +1168,10 @@
                     <div class="section-title">Apps:</div>
                     <div class="app-pills">
                       <span v-for="app in appOptions" :key="app.id" class="app-pill">
+                        <span class="app-icon">
+                          <Smartphone v-if="getAppType(app.id) === 'mobile'" size="14" />
+                          <Monitor v-else size="14" />
+                        </span>
                         {{ app.name }}
                       </span>
                     </div>
@@ -1195,7 +1211,7 @@
 </template>
 
 <script>
-import { Key, Copy, Pencil, Eye, Check } from 'lucide-vue-next'
+import { Key, Copy, Pencil, Eye, Check, Smartphone, Monitor } from 'lucide-vue-next'
 
 export default {
   name: 'UserWizard',
@@ -1204,7 +1220,9 @@ export default {
     Copy,
     Pencil,
     Eye,
-    Check
+    Check,
+    Smartphone,
+    Monitor
   },
   props: {
     isOpen: Boolean
@@ -1301,19 +1319,19 @@ export default {
       appSearch: '',
       openAppDropdowns: {},
       appOptions: [
-        { id: 1, name: 'Mobile App' },
-        { id: 2, name: 'Web Dashboard' },
-        { id: 3, name: 'Analytics Portal' },
-        { id: 4, name: 'Customer Portal' },
-        { id: 5, name: 'Admin Console' },
-        { id: 6, name: 'Marketing Site' },
-        { id: 7, name: 'Help Center' },
-        { id: 8, name: 'API Gateway' },
-        { id: 9, name: 'Sales Platform' },
-        { id: 10, name: 'Developer Tools' },
-        { id: 11, name: 'iOS App' },
-        { id: 12, name: 'Android App' },
-        { id: 13, name: 'Desktop App' },
+        { id: 1, name: 'iOS app', type: 'mobile' },
+        { id: 2, name: 'Android app', type: 'mobile' },
+        { id: 3, name: 'Web app', type: 'desktop' },
+        { id: 4, name: 'Mobile App' },
+        { id: 5, name: 'Web Dashboard' },
+        { id: 6, name: 'Analytics Portal' },
+        { id: 7, name: 'Customer Portal' },
+        { id: 8, name: 'Admin Console' },
+        { id: 9, name: 'Marketing Site' },
+        { id: 10, name: 'Help Center' },
+        { id: 11, name: 'API Gateway' },
+        { id: 12, name: 'Sales Platform' },
+        { id: 13, name: 'Developer Tools' },
         { id: 14, name: 'Partner Portal' },
         { id: 15, name: 'Internal Tools' },
         { id: 16, name: 'E-commerce Platform' },
@@ -1436,32 +1454,27 @@ export default {
         this.selectEmail();
       }
     },
-    selectPermission(id) {
-      this.selectedPermission = id;
-      
-      // Wait for the new section to be rendered
-      this.$nextTick(() => {
-        // Find all wizard cards
-        const wizardCards = document.querySelectorAll('.wizard-card');
-        let targetCard;
-        
-        // Select the appropriate card based on permission type
-        if (id === 'copy' || id === 'scratch') {
-          targetCard = wizardCards[2]; // Third card (Select permissions)
-        }
-        
-        // If we found the target card, scroll to it with offset
-        if (targetCard) {
-          const offset = 100;
-          const wizardContent = document.querySelector('.wizard-content');
-          const elementPosition = targetCard.offsetTop;
-          
-          wizardContent.scrollTo({
-            top: elementPosition - offset,
-            behavior: 'smooth'
-          });
-        }
-      });
+    selectPermission(permissionId) {
+      this.selectedPermission = permissionId;
+
+      // Add smooth scroll for all permission selections
+      if (permissionId === 'view' || permissionId === 'admin' || permissionId === 'copy' || permissionId === 'scratch') {
+        this.$nextTick(() => {
+          setTimeout(() => {
+            const wizardContent = document.querySelector('.wizard-content');
+            if (wizardContent) {
+              const currentCard = document.querySelector(`[data-permission="${permissionId}"]`);
+              if (currentCard) {
+                const scrollTarget = currentCard.offsetTop - 20;
+                wizardContent.scrollTo({
+                  top: scrollTarget,
+                  behavior: 'smooth'
+                });
+              }
+            }
+          }, 300);
+        });
+      }
     },
     selectTeam(team) {
       if (!this.selectedTeams.includes(team.id)) {
@@ -1480,6 +1493,20 @@ export default {
     selectUser(user) {
       this.selectedUser = user;
       this.showUserDropdown = false;
+      this.handleUserSelected(user);
+
+      // Add delay before scrolling
+      setTimeout(() => {
+        const wizardContent = document.querySelector('.wizard-content');
+        const permissionsSection = document.querySelector('.permissions-wrapper');
+        if (wizardContent && permissionsSection) {
+          const scrollTarget = permissionsSection.offsetTop - 100; // Add some offset
+          wizardContent.scrollTo({
+            top: scrollTarget,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
     },
     filterUsers() {
       this.showUserDropdown = true;
@@ -1537,19 +1564,17 @@ export default {
       
       this.permissionSets.push(newSet);
 
-      // Scroll to the new permission set after it's added
+      // Scroll the wizard content
       this.$nextTick(() => {
-        const lastPermissionSet = document.querySelector(`.permissions-section > div:last-child`);
-        if (lastPermissionSet) {
-          const offset = 100; // Add offset to show more of the new section
-          const elementPosition = lastPermissionSet.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - offset;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
+        setTimeout(() => {
+          const wizardContent = document.querySelector('.wizard-content');
+          if (wizardContent) {
+            wizardContent.scrollBy({
+              top: 450,
+              behavior: 'smooth'
+            });
+          }
+        }, 300);
       });
     },
     getUnselectedAppsCount(permissionSet) {
@@ -1717,6 +1742,10 @@ export default {
     getAppName(appId) {
       const app = this.appOptions.find(a => a.id === appId);
       return app ? app.name : '';
+    },
+    getAppType(appId) {
+      const app = this.appOptions.find(a => a.id === appId);
+      return app?.type || 'desktop'; // Default to desktop if type not specified
     }
   },
   mounted() {
@@ -2668,7 +2697,7 @@ h3 {
 }
 
 .checkbox-option span {
-  flex: 1;
+
   min-width: 0;
 }
 
@@ -2850,23 +2879,22 @@ h3 {
 }
 
 .app-pills {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 4px;
+  gap: 4px;
 }
 
 .app-pill {
+  background: #EAECF1;
+  border: 1px solid #EAECF1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 14px;
+  color: #2D3748;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  background: #F7FAFC;  /* Changed from #EBF8FF */
-  border: 1px solid #E2E8F0;  /* Changed from #90CDF4 */
-  border-radius: 4px;
-  font-size: 14px;
-  color: #4A5568;  /* Changed from #2C5282 */
-  max-width: 200px;
+  gap: 4px;
+  height: 24px;
 }
 
 .app-pill .remove-pill {
@@ -2987,5 +3015,71 @@ h3 {
 /* Update spacing between sections */
 .permissions-wrapper > *:not(:last-child) {
   margin-bottom: 0px;
+}
+
+.app-icon {
+  display: flex;
+  align-items: center;
+  color: #4A5568;
+  font-size: 12px;
+}
+
+/* Add this if you're not using Font Awesome */
+.app-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.5px;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.checkbox-option .app-icon {
+  display: flex;
+  align-items: center;
+  color: #4A5568;
+}
+
+.checkbox-option .app-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.5px;
+}
+
+/* Update the gap for app dropdown checkbox options */
+.team-dropdown .checkbox-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.team-dropdown .checkbox-option input[type="checkbox"] {
+  margin: 0 4px 0 0;
+  flex: 0 0 16px;
+}
+
+.team-dropdown .checkbox-option .app-icon {
+  margin: 0 4px 0 0;
+  display: flex;
+  align-items: center;
+}
+
+
+
+.team-dropdown .checkbox-option .app-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.5px;
+}
+
+/* Remove any gap properties from parent styles */
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 </style> 
