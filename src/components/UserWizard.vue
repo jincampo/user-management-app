@@ -162,7 +162,7 @@
                       <p class="section-description">Set permissions for all subscription level features.</p>
 
                       <div class="roles-section">
-                        <h5>Roles by category</h5>
+                        <h6>Roles by category</h6>
                         <a class="expand-link" @click="toggleSubscriptionRoleDetails">
                           {{ showSubscriptionRoleDetails ? 'Collapse role details' : 'Expand role details' }}
                         </a>
@@ -176,55 +176,59 @@
                             <div class="role-content">
                               <span class="role-title">Segments and reports</span>
                               <div class="role-options">
-                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('segments-viewer')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="segments" value="viewer" checked disabled>
                                     <span>Viewer</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div v-if="showSubscriptionRoleDetails" class="role-details">
                                     <div class="role-details-content">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item">Can view segments.</li>
-                                          <li class="permission-item">Can view reports.</li>
+                                          <li class="permission-item">All permissions of a segments and reports editor</li>
+                                          <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
                                         </ul>
                                       </div>
                                     </div>
                                   </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('segments-editor')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="segments" value="editor">
                                     <span>Editor</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Editor</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">View all segments and reports</li>
-                                        <li class="permission-item">Export segment data</li>
-                                        <li class="permission-item">Access segment analytics</li>
-                                      </ul>
+                                  <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item">Create and edit segments</li>
+                                          <li class="permission-item">Manage segment settings</li>
+                                          <li class="permission-item">Access segment analytics</li>
+                                        </ul>
+                                      </div>
                                     </div>
                                   </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('segments-verifier')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="segments" value="verifier">
                                     <span>Verifier</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div v-if="showSubscriptionRoleDetails" class="role-details">
                                     <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Verifier</span>
-                                      </div>
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>segments viewer</em></li>
-                                          <li class="permission-item">Verify and approve segments</li>
-                                          <li class="permission-item">Manage segment approval workflow</li>
+                                          <li class="permission-item">All permissions of a segments and reports editor</li>
+                                          <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
                                         </ul>
                                       </div>
                                     </div>
@@ -244,70 +248,31 @@
                             <div class="role-content">
                               <span class="role-title">Listen</span>
                               <div class="role-options">
-                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('listen-viewer')"
+                                >
                                   <div class="checkbox-row">
-                                    <input 
-                                      type="checkbox" 
-                                      name="listen" 
-                                      value="viewer"
-                                      checked
-                                      disabled
-                                    >
+                                    <input type="checkbox" name="listen" value="viewer" checked disabled>
                                     <span>Viewer</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Viewer</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">View all feedback items</li>
-                                        <li class="permission-item">Access feedback analytics</li>
-                                        <li class="permission-item">View visitor votes and interactions</li>
-                                      </ul>
-                                    </div>
-                                  </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('listen-editor')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="listen" value="editor">
                                     <span>Editor</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Manager</span>
-                                      </div>
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
-                                          <li class="permission-item">Manage feedback settings</li>
-                                          <li class="permission-item">Delete any feedback items</li>
-                                          <li class="permission-item">Edit any feedback items</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('listen-manager')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="listen" value="manager">
                                     <span>Manager</span>
-                                  </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Manager</span>
-                                      </div>
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
-                                          <li class="permission-item">Manage feedback settings</li>
-                                          <li class="permission-item">Delete any feedback items</li>
-                                          <li class="permission-item">Edit any feedback items</li>
-                                        </ul>
-                                      </div>
-                                    </div>
                                   </div>
                                 </label>
                               </div>
@@ -324,71 +289,31 @@
                             <div class="role-content">
                               <span class="role-title">Roadmaps</span>
                               <div class="role-options">
-                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-viewer')"
+                                >
                                   <div class="checkbox-row">
-                                    <input 
-                                      type="checkbox" 
-                                      name="roadmaps" 
-                                      value="viewer"
-                                      checked
-                                      disabled
-                                    >
+                                    <input type="checkbox" name="roadmaps" value="viewer" checked disabled>
                                     <span>Viewer</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Viewer</span>
-                                      </div>
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item">View all roadmaps</li>
-                                          <li class="permission-item">Access roadmap analytics</li>
-                                          <li class="permission-item">View roadmap settings</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-editor')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="roadmaps" value="editor">
                                     <span>Editor</span>
                                   </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Viewer</span>
-                                      </div>
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item">View all roadmaps</li>
-                                          <li class="permission-item">Access roadmap analytics</li>
-                                          <li class="permission-item">View roadmap settings</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
                                 </label>
-                                <label class="role-option">
+                                <label 
+                                  class="role-option"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-manager')"
+                                >
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="roadmaps" value="manager">
                                     <span>Manager</span>
-                                  </div>
-                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-header">
-                                        <span class="role-name">Manager</span>
-                                      </div>
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>roadmaps editor</em></li>
-                                          <li class="permission-item">Manage roadmap settings</li>
-                                          <li class="permission-item">Control roadmap visibility</li>
-                                          <li class="permission-item">Delete any roadmaps</li>
-                                        </ul>
-                                      </div>
-                                    </div>
                                   </div>
                                 </label>
                               </div>
@@ -402,8 +327,7 @@
                     <div class="permissions-section">
                       <h4>App level permissions</h4>
                       <p class="section-description">Set permissions for specific apps.</p>
-
-                      <!-- Inside the app level permissions section -->
+                      
                       <div v-if="unusedApps.length > 0" class="app-info">
                         <span class="info-icon">i</span>
                         <span>
@@ -412,6 +336,527 @@
                       </div>
 
                       <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
+                        <div class="permission-set-header">
+                          <h6>Permission set {{ index + 1 }}</h6>
+                          <div class="form-group">
+                            <label>Apps <span class="required">*</span></label>
+                            <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
+                              <div class="select-wrapper">
+                                <div class="app-pills">
+                                  <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                    <span class="app-icon">
+                                      <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
+                                      <Monitor v-else size="14" />
+                                    </span>
+                                    {{ getAppName(appId) }}
+                                    <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
+                                  </span>
+                                </div>
+                                <input 
+                                  type="text" 
+                                  :placeholder="getAppInputPlaceholder(permissionSet)"
+                                  @focus="() => showAppDropdown(permissionSet.id)"
+                                  readonly
+                                >
+                              </div>
+                              <div v-if="openAppDropdowns[permissionSet.id]" class="team-dropdown">
+                                <div class="dropdown-search">
+                                  <input 
+                                    type="text" 
+                                    v-model="appFilter"
+                                    placeholder="Search apps..."
+                                    @click.stop
+                                  >
+                                </div>
+                                <div 
+                                  v-for="app in filteredApps" 
+                                  :key="app.id"
+                                  class="team-option"
+                                  @click.stop="toggleApp(app, permissionSet.id)"
+                                  :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
+                                >
+                                  <div class="checkbox-option">
+                                    <input 
+                                      type="checkbox" 
+                                      :checked="permissionSet.selectedApps.includes(app.id)"
+                                      @click.stop
+                                    >
+                                    <span class="app-icon">
+                                      <Smartphone v-if="getAppType(app.id) === 'mobile'" size="14" />
+                                      <Monitor v-else size="14" />
+                                    </span>
+                                    <span>{{ app.name }}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Role options -->
+                          <div class="roles-section">
+                            <h6>Roles by category</h6>
+                            <a class="expand-link" @click="toggleAppRoleDetails">
+                              {{ showAppRoleDetails ? 'Collapse role details' : 'Expand role details' }}
+                            </a>
+
+                            <div class="role-group">
+                              <div class="role-header">
+                                <div class="icon-wrapper">
+                                  <img src="@/assets/guides.png" class="role-icon" alt="Guides icon" />
+                                </div>
+                                <div class="divider"></div>
+                                <div class="role-content">
+                                  <span class="role-title">Guides</span>
+                                  <div class="role-options">
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('viewer')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="viewer" checked disabled>
+                                        <span>Viewer</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-content">
+                                          <div class="role-details-body">
+                                            <ul class="permissions-list">
+                                              <li class="permission-item">View all guides and resource center content</li>
+                                              <li class="permission-item">Access guide analytics</li>
+                                              <li class="permission-item">View guide settings</li>
+                                            </ul>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </label>
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('resource-center-author')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="resource-center-author">
+                                        <span>Resource center author</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">All permissions of a guides viewer</li>
+                                            <li class="permission-item">Create and edit resource center content</li>
+                                            <li class="permission-item">Manage resource center categories</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </label>
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('resource-center-publisher')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="resource-center-publisher">
+                                        <span>Resource center publisher</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">All permissions of a resource center author</li>
+                                            <li class="permission-item">Publish resource center content</li>
+                                            <li class="permission-item">Manage resource center publishing workflow</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </label>
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('creator')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="creator">
+                                        <span>Creator</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">All permissions of a guides viewer</li>
+                                            <li class="permission-item">Create and edit guides</li>
+                                            <li class="permission-item">Share guides with other users</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </label>
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('publisher')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="publisher">
+                                        <span>Publisher</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">All permissions of a guides creator</li>
+                                            <li class="permission-item">Publish guides</li>
+                                            <li class="permission-item">Manage guide publishing workflow</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </label>
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('content-editor')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="guides" value="content-editor">
+                                        <span>Content Editor</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">All permissions of a guides viewer</li>
+                                            <li class="permission-item">Edit guide content</li>
+                                            <li class="permission-item">Manage guide content workflow</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Add back the tagging section after the guides section -->
+                            <div class="role-group">
+                              <div class="role-header">
+                                <div class="icon-wrapper">
+                                  <img src="@/assets/tagging.png" class="role-icon" alt="Tagging icon" />
+                                </div>
+                                <div class="divider"></div>
+                                <div class="role-content">
+                                  <span class="role-title">Tagging</span>
+                                  <div class="role-options">
+                                    <label 
+                                      class="role-option" 
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('viewer')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="tagging" value="viewer" checked disabled>
+                                        <span>Viewer</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-content">
+                                          <div class="role-details-body">
+                                            <ul class="permissions-list">
+                                              <li class="permission-item">View all tags</li>
+                                              <li class="permission-item">Access tag analytics</li>
+                                              <li class="permission-item">View tag settings</li>
+                                            </ul>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </label>
+
+                                    <label 
+                                      class="role-option"
+                                      :data-permissions-tooltip="getRolePermissionsTooltip('editor')"
+                                    >
+                                      <div class="checkbox-row">
+                                        <input type="checkbox" name="tagging" value="editor">
+                                        <span>Editor</span>
+                                      </div>
+                                      <div class="role-details" v-if="showAppRoleDetails">
+                                        <div class="role-details-content">
+                                          <div class="role-details-body">
+                                            <ul class="permissions-list">
+                                              <li class="permission-item">Create and edit tags</li>
+                                              <li class="permission-item">Manage tag categories</li>
+                                              <li class="permission-item">Configure tag settings</li>
+                                            </ul>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                       <!-- Add this new div -->
+    <div class="add-permission-set">
+      <a 
+        href="#" 
+        class="add-permission-link"
+        :class="{ 'disabled': !canAddPermissionSet }"
+        @mouseenter="showTooltip"
+        @mouseleave="hideTooltip"
+        @click.prevent="canAddPermissionSet && addPermissionSet()"
+      >
+        + Add another permission set
+      </a>
+      <div v-if="showTooltipText && !canAddPermissionSet" class="tooltip">
+        Select apps in the current permission set to add another
+      </div>
+    </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Start from scratch section -->
+          <div v-if="selectedPermission === 'scratch'" class="wizard-card" data-permission="scratch">
+            <h3>Select permissions</h3>
+            <div class="card-body">
+              <div class="form-container">
+                <div class="permissions-wrapper">
+                  <!-- Subscription section -->
+                  <div class="permissions-section">
+                    <h4>Subscription level permissions</h4>
+                    <p class="section-description">Set permissions for all subscription level features.</p>
+
+                    <div class="roles-section">
+                      <h6>Roles by category</h6>
+                      <a class="expand-link" @click="toggleSubscriptionRoleDetails">
+                        {{ showSubscriptionRoleDetails ? 'Collapse role details' : 'Expand role details' }}
+                      </a>
+
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/segments.png" class="role-icon" alt="Segments icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Segments and reports</span>
+                            <div class="role-options">
+                              <label 
+                                class="role-option"
+                                :data-permissions-tooltip="getRolePermissionsTooltip('segments-viewer')"
+                              >
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="viewer" checked disabled>
+                                  <span>Viewer</span>
+                                </div>
+                                <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">All permissions of a segments and reports editor</li>
+                                        <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label 
+                                class="role-option"
+                                :data-permissions-tooltip="getRolePermissionsTooltip('segments-editor')"
+                              >
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">Create and edit segments</li>
+                                        <li class="permission-item">Manage segment settings</li>
+                                        <li class="permission-item">Access segment analytics</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label 
+                                class="role-option"
+                                :data-permissions-tooltip="getRolePermissionsTooltip('segments-verifier')"
+                              >
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="segments" value="verifier">
+                                  <span>Verifier</span>
+                                </div>
+                                <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">All permissions of a segments and reports editor</li>
+                                        <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/listen.png" class="role-icon" alt="Listen icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Listen</span>
+                            <div class="role-options">
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('listen-viewer')">
+                                <div class="checkbox-row">
+                                  <input 
+                                    type="checkbox" 
+                                    name="listen" 
+                                    value="viewer"
+                                    checked
+                                    disabled
+                                  >
+                                  <span>Viewer</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">View all feedback items</li>
+                                        <li class="permission-item">Access feedback analytics</li>
+                                        <li class="permission-item">View visitor votes and interactions</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('listen-editor')">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="listen" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item">Manage feedback settings</li>
+                                        <li class="permission-item">Delete any feedback items</li>
+                                        <li class="permission-item">Edit any feedback items</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('listen-manager')">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="listen" value="manager">
+                                  <span>Manager</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item">Manage feedback settings</li>
+                                        <li class="permission-item">Delete any feedback items</li>
+                                        <li class="permission-item">Edit any feedback items</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="role-group">
+                        <div class="role-header">
+                          <div class="icon-wrapper">
+                            <img src="@/assets/roadmaps.png" class="role-icon" alt="Roadmaps icon" />
+                          </div>
+                          <div class="divider"></div>
+                          <div class="role-content">
+                            <span class="role-title">Roadmaps</span>
+                            <div class="role-options">
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-viewer')">
+
+                                <div class="checkbox-row">
+                                  <input 
+                                    type="checkbox" 
+                                    name="roadmaps" 
+                                    value="viewer"
+                                    checked
+                                    disabled
+                                  >
+                                  <span>Viewer</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">View all roadmaps</li>
+                                        <li class="permission-item">Access roadmap analytics</li>
+                                        <li class="permission-item">View roadmap settings</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-editor')">
+
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="roadmaps" value="editor">
+                                  <span>Editor</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item">View all roadmaps</li>
+                                        <li class="permission-item">Access roadmap analytics</li>
+                                        <li class="permission-item">View roadmap settings</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                              <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('roadmaps-manager')">
+                                <div class="checkbox-row">
+                                  <input type="checkbox" name="roadmaps" value="manager">
+                                  <span>Manager</span>
+                                </div>
+                                <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                  <div class="role-details-content">
+                                    <div class="role-details-body">
+                                      <ul class="permissions-list">
+                                        <li class="permission-item inherited">All permissions of a <em>roadmaps editor</em></li>
+                                        <li class="permission-item">Manage roadmap settings</li>
+                                        <li class="permission-item">Control roadmap visibility</li>
+                                        <li class="permission-item">Delete any roadmaps</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- App level section -->
+                  <div class="permissions-section">
+                    <h4>App level permissions</h4>
+                    <p class="section-description">Set permissions for specific apps.</p>
+                    
+                    <div v-if="unusedApps.length > 0" class="app-info">
+                      <span class="info-icon">i</span>
+                      <span>
+                        <strong class="app-count" :data-tooltip="'Apps: ' + unusedAppsList">{{ unusedApps.length }} {{ unusedApps.length === 1 ? 'app' : 'apps' }}</strong><span class="info-text">{{ unusedApps.length === 1 ? ' is' : ' are' }} not included in any permission set and will, by default, have <strong>Viewer</strong> access.</span>
+                      </span>
+                    </div>
+
+                    <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
+                      <div class="permission-set-header">
+                        <h6>Permission set {{ index + 1 }}</h6>
                         <div class="form-group">
                           <label>Apps <span class="required">*</span></label>
                           <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
@@ -467,7 +912,12 @@
                         </div>
 
                         <!-- Role options -->
-                        <div class="role-options">
+                        <div class="roles-section">
+                          <h6>Roles by category</h6>
+                          <a class="expand-link" @click="toggleAppRoleDetails">
+                            {{ showAppRoleDetails ? 'Collapse role details' : 'Expand role details' }}
+                          </a>
+
                           <div class="role-group">
                             <div class="role-header">
                               <div class="icon-wrapper">
@@ -477,7 +927,10 @@
                               <div class="role-content">
                                 <span class="role-title">Guides</span>
                                 <div class="role-options">
-                                  <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('viewer')"
+                                  >
                                     <div class="checkbox-row">
                                       <input type="checkbox" name="guides" value="viewer" checked disabled>
                                       <span>Viewer</span>
@@ -494,7 +947,10 @@
                                       </div>
                                     </div>
                                   </label>
-                                  <label class="role-option">
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('resource-center-author')"
+                                  >
                                     <div class="checkbox-row">
                                       <input type="checkbox" name="guides" value="resource-center-author">
                                       <span>Resource center author</span>
@@ -502,14 +958,17 @@
                                     <div class="role-details" v-if="showAppRoleDetails">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                          <li class="permission-item">All permissions of a guides viewer</li>
                                           <li class="permission-item">Create and edit resource center content</li>
                                           <li class="permission-item">Manage resource center categories</li>
                                         </ul>
                                       </div>
                                     </div>
                                   </label>
-                                  <label class="role-option">
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('resource-center-publisher')"
+                                  >
                                     <div class="checkbox-row">
                                       <input type="checkbox" name="guides" value="resource-center-publisher">
                                       <span>Resource center publisher</span>
@@ -517,640 +976,143 @@
                                     <div class="role-details" v-if="showAppRoleDetails">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>resource center author</em></li>
+                                          <li class="permission-item">All permissions of a resource center author</li>
                                           <li class="permission-item">Publish resource center content</li>
                                           <li class="permission-item">Manage resource center publishing workflow</li>
                                         </ul>
                                       </div>
                                     </div>
                                   </label>
-                                  <label class="role-option">
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('creator')"
+                                  >
                                     <div class="checkbox-row">
                                       <input type="checkbox" name="guides" value="creator">
                                       <span>Creator</span>
                                     </div>
                                     <div class="role-details" v-if="showAppRoleDetails">
-                                      <div class="role-details-content">
-                                        <div class="role-details-body">
-                                          <ul class="permissions-list">
-                                            <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
-                                            <li class="permission-item">Create and edit guides</li>
-                                            <li class="permission-item">Share guides with other users</li>
-                                          </ul>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </label>
-                                  <label class="role-option">
-                                    <div class="checkbox-row">
-                                      <input type="checkbox" name="guides" value="publisher">
-                                      <span>Publisher</span>
-                                    </div>
-                                    <div class="role-details" v-if="showAppRoleDetails">
-                                      <div class="role-details-content">
-                                        <div class="role-details-body">
-                                          <ul class="permissions-list">
-                                            <li class="permission-item inherited">All permissions of a <em>guides creator</em></li>
-                                            <li class="permission-item">Publish guides</li>
-                                            <li class="permission-item">Manage guide publishing workflow</li>
-                                          </ul>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </label>
-                                  <label class="role-option">
-                                    <div class="checkbox-row">
-                                      <input type="checkbox" name="guides" value="content-editor">
-                                      <span>Content editor</span>
-                                    </div>
-                                    <div class="role-details" v-if="showAppRoleDetails">
-                                      <div class="role-details-content">
-                                        <div class="role-details-body">
-                                          <ul class="permissions-list">
-                                            <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
-                                            <li class="permission-item">Edit guide content</li>
-                                            <li class="permission-item">Manage guide content workflow</li>
-                                          </ul>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Add back the tagging section after the guides section -->
-                        <div class="role-group">
-                          <div class="role-header">
-                            <div class="icon-wrapper">
-                              <img src="@/assets/tagging.png" class="role-icon" alt="Tagging icon" />
-                            </div>
-                            <div class="divider"></div>
-                            <div class="role-content">
-                              <span class="role-title">Tagging</span>
-                              <div class="role-options">
-                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="tagging" value="viewer" checked disabled>
-                                    <span>Viewer</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item">View all tags</li>
-                                          <li class="permission-item">Access tag analytics</li>
-                                          <li class="permission-item">View tag settings</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </label>
-
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="tagging" value="editor">
-                                    <span>Editor</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>tagging viewer</em></li>
-                                          <li class="permission-item">Create and edit tags</li>
-                                          <li class="permission-item">Manage tag categories</li>
-                                          <li class="permission-item">Configure tag settings</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Only show add button on last permission set -->
-                        <div v-if="index === permissionSets.length - 1" class="permission-set-divider">
-                          <div class="divider-container">
-                            <div class="divider-line"></div>
-                          </div>
-                          <button 
-                            class="add-permission-set" 
-                            :class="{ 'disabled': !canAddPermissionSet }"
-                            :disabled="!canAddPermissionSet"
-                            data-tooltip="Add apps to the first permission set before adding a new one"
-                            @click="addPermissionSet"
-                          >
-                            + Add another permission set
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <!-- Start from scratch section -->
-          <div v-if="selectedPermission === 'scratch'" class="wizard-card" data-permission="scratch">
-            <h3>Select permissions</h3>
-            <div class="card-body">
-              <div class="form-container">
-                <div class="permissions-wrapper">
-                  <!-- Subscription section -->
-                  <div class="permissions-section">
-                    <h4>Subscription level permissions</h4>
-                    <p class="section-description">Set permissions for all subscription level features.</p>
-
-                    <div class="roles-section">
-                      <h5>Roles by category</h5>
-                      <a class="expand-link" @click="toggleSubscriptionRoleDetails">
-                        {{ showSubscriptionRoleDetails ? 'Collapse role details' : 'Expand role details' }}
-                      </a>
-
-                      <div class="role-group">
-                        <div class="role-header">
-                          <div class="icon-wrapper">
-                            <img src="@/assets/segments.png" class="role-icon" alt="Segments icon" />
-                          </div>
-                          <div class="divider"></div>
-                          <div class="role-content">
-                            <span class="role-title">Segments and reports</span>
-                            <div class="role-options">
-                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="segments" value="viewer" checked disabled>
-                                  <span>Viewer</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">Can view segments.</li>
-                                        <li class="permission-item">Can view reports.</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="segments" value="editor">
-                                  <span>Editor</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-header">
-                                    <span class="role-name">Editor</span>
-                                  </div>
-                                  <div class="role-details-body">
-                                    <ul class="permissions-list">
-                                      <li class="permission-item">View all segments and reports</li>
-                                      <li class="permission-item">Export segment data</li>
-                                      <li class="permission-item">Access segment analytics</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="segments" value="verifier">
-                                  <span>Verifier</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Verifier</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>segments viewer</em></li>
-                                        <li class="permission-item">Verify and approve segments</li>
-                                        <li class="permission-item">Manage segment approval workflow</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="role-group">
-                        <div class="role-header">
-                          <div class="icon-wrapper">
-                            <img src="@/assets/listen.png" class="role-icon" alt="Listen icon" />
-                          </div>
-                          <div class="divider"></div>
-                          <div class="role-content">
-                            <span class="role-title">Listen</span>
-                            <div class="role-options">
-                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                <div class="checkbox-row">
-                                  <input 
-                                    type="checkbox" 
-                                    name="listen" 
-                                    value="viewer"
-                                    checked
-                                    disabled
-                                  >
-                                  <span>Viewer</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-header">
-                                    <span class="role-name">Viewer</span>
-                                  </div>
-                                  <div class="role-details-body">
-                                    <ul class="permissions-list">
-                                      <li class="permission-item">View all feedback items</li>
-                                      <li class="permission-item">Access feedback analytics</li>
-                                      <li class="permission-item">View visitor votes and interactions</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="listen" value="editor">
-                                  <span>Editor</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Manager</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
-                                        <li class="permission-item">Manage feedback settings</li>
-                                        <li class="permission-item">Delete any feedback items</li>
-                                        <li class="permission-item">Edit any feedback items</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="listen" value="manager">
-                                  <span>Manager</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Manager</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
-                                        <li class="permission-item">Manage feedback settings</li>
-                                        <li class="permission-item">Delete any feedback items</li>
-                                        <li class="permission-item">Edit any feedback items</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="role-group">
-                        <div class="role-header">
-                          <div class="icon-wrapper">
-                            <img src="@/assets/roadmaps.png" class="role-icon" alt="Roadmaps icon" />
-                          </div>
-                          <div class="divider"></div>
-                          <div class="role-content">
-                            <span class="role-title">Roadmaps</span>
-                            <div class="role-options">
-                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                <div class="checkbox-row">
-                                  <input 
-                                    type="checkbox" 
-                                    name="roadmaps" 
-                                    value="viewer"
-                                    checked
-                                    disabled
-                                  >
-                                  <span>Viewer</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Viewer</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">View all roadmaps</li>
-                                        <li class="permission-item">Access roadmap analytics</li>
-                                        <li class="permission-item">View roadmap settings</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="roadmaps" value="editor">
-                                  <span>Editor</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Viewer</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">View all roadmaps</li>
-                                        <li class="permission-item">Access roadmap analytics</li>
-                                        <li class="permission-item">View roadmap settings</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="roadmaps" value="manager">
-                                  <span>Manager</span>
-                                </div>
-                                <div class="role-details" v-if="showSubscriptionRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-header">
-                                      <span class="role-name">Manager</span>
-                                    </div>
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>roadmaps editor</em></li>
-                                        <li class="permission-item">Manage roadmap settings</li>
-                                        <li class="permission-item">Control roadmap visibility</li>
-                                        <li class="permission-item">Delete any roadmaps</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- App level section -->
-                  <div class="permissions-section">
-                    <h4>App level permissions</h4>
-                    <p class="section-description">Set permissions for specific apps.</p>
-
-                    <!-- Inside the app level permissions section -->
-                    <div v-if="unusedApps.length > 0" class="app-info">
-                      <span class="info-icon">i</span>
-                      <span>
-                        <strong class="app-count" :data-tooltip="'Apps: ' + unusedAppsList">{{ unusedApps.length }} {{ unusedApps.length === 1 ? 'app' : 'apps' }}</strong><span class="info-text">{{ unusedApps.length === 1 ? ' is' : ' are' }} not included in any permission set and will, by default, have <strong>Viewer</strong> access.</span>
-                      </span>
-                    </div>
-
-                    <div v-for="(permissionSet, index) in permissionSets" :key="permissionSet.id">
-                      <div class="form-group">
-                        <label>Apps <span class="required">*</span></label>
-                        <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
-                          <div class="select-wrapper">
-                            <div class="app-pills">
-                              <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
-                                <span class="app-icon">
-                                  <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
-                                  <Monitor v-else size="14" />
-                                </span>
-                                {{ getAppName(appId) }}
-                                <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
-                              </span>
-                            </div>
-                            <input 
-                              type="text" 
-                              :placeholder="getAppInputPlaceholder(permissionSet)"
-                              @focus="() => showAppDropdown(permissionSet.id)"
-                              readonly
-                            >
-                          </div>
-                          <div v-if="openAppDropdowns[permissionSet.id]" class="team-dropdown">
-                            <div class="dropdown-search">
-                              <input 
-                                type="text" 
-                                v-model="appFilter"
-                                placeholder="Search apps..."
-                                @click.stop
-                              >
-                            </div>
-                            <div 
-                              v-for="app in filteredApps" 
-                              :key="app.id"
-                              class="team-option"
-                              @click.stop="toggleApp(app, permissionSet.id)"
-                              :class="{ 'disabled': isAppSelectedInOtherSet(app.id, permissionSet.id) }"
-                            >
-                              <div class="checkbox-option">
-                                <input 
-                                  type="checkbox" 
-                                  :checked="permissionSet.selectedApps.includes(app.id)"
-                                  @click.stop
-                                >
-                                <span class="app-icon">
-                                  <Smartphone v-if="getAppType(app.id) === 'mobile'" size="14" />
-                                  <Monitor v-else size="14" />
-                                </span>
-                                <span>{{ app.name }}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Role options -->
-                      <div class="role-options">
-                        <div class="role-group">
-                          <div class="role-header">
-                            <div class="icon-wrapper">
-                              <img src="@/assets/guides.png" class="role-icon" alt="Guides icon" />
-                            </div>
-                            <div class="divider"></div>
-                            <div class="role-content">
-                              <span class="role-title">Guides</span>
-                              <div class="role-options">
-                                <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="viewer" checked disabled>
-                                    <span>Viewer</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item">View all guides and resource center content</li>
-                                          <li class="permission-item">Access guide analytics</li>
-                                          <li class="permission-item">View guide settings</li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </label>
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="resource-center-author">
-                                    <span>Resource center author</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
-                                        <li class="permission-item">Create and edit resource center content</li>
-                                        <li class="permission-item">Manage resource center categories</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </label>
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="resource-center-publisher">
-                                    <span>Resource center publisher</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>resource center author</em></li>
-                                        <li class="permission-item">Publish resource center content</li>
-                                        <li class="permission-item">Manage resource center publishing workflow</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </label>
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="creator">
-                                    <span>Creator</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
-                                      <div class="role-details-body">
-                                        <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                          <li class="permission-item">All permissions of a guides viewer</li>
                                           <li class="permission-item">Create and edit guides</li>
                                           <li class="permission-item">Share guides with other users</li>
                                         </ul>
                                       </div>
                                     </div>
-                                  </div>
-                                </label>
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="publisher">
-                                    <span>Publisher</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
+                                  </label>
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('publisher')"
+                                  >
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="publisher">
+                                      <span>Publisher</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>guides creator</em></li>
+                                          <li class="permission-item">All permissions of a guides creator</li>
                                           <li class="permission-item">Publish guides</li>
                                           <li class="permission-item">Manage guide publishing workflow</li>
                                         </ul>
                                       </div>
                                     </div>
-                                  </div>
-                                </label>
-                                <label class="role-option">
-                                  <div class="checkbox-row">
-                                    <input type="checkbox" name="guides" value="content-editor">
-                                    <span>Content editor</span>
-                                  </div>
-                                  <div class="role-details" v-if="showAppRoleDetails">
-                                    <div class="role-details-content">
+                                  </label>
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('content-editor')"
+                                  >
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="guides" value="content-editor">
+                                      <span>Content Editor</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item inherited">All permissions of a <em>guides viewer</em></li>
+                                          <li class="permission-item">All permissions of a guides viewer</li>
                                           <li class="permission-item">Edit guide content</li>
                                           <li class="permission-item">Manage guide content workflow</li>
                                         </ul>
                                       </div>
                                     </div>
-                                  </div>
-                                </label>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Add back the tagging section after the guides section -->
+                          <div class="role-group">
+                            <div class="role-header">
+                              <div class="icon-wrapper">
+                                <img src="@/assets/tagging.png" class="role-icon" alt="Tagging icon" />
+                              </div>
+                              <div class="divider"></div>
+                              <div class="role-content">
+                                <span class="role-title">Tagging</span>
+                                <div class="role-options">
+                                  <label 
+                                    class="role-option" 
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('viewer')"
+                                  >
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="tagging" value="viewer" checked disabled>
+                                      <span>Viewer</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">View all tags</li>
+                                            <li class="permission-item">Access tag analytics</li>
+                                            <li class="permission-item">View tag settings</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+
+                                  <label 
+                                    class="role-option"
+                                    :data-permissions-tooltip="getRolePermissionsTooltip('editor')"
+                                  >
+                                    <div class="checkbox-row">
+                                      <input type="checkbox" name="tagging" value="editor">
+                                      <span>Editor</span>
+                                    </div>
+                                    <div class="role-details" v-if="showAppRoleDetails">
+                                      <div class="role-details-content">
+                                        <div class="role-details-body">
+                                          <ul class="permissions-list">
+                                            <li class="permission-item">Create and edit tags</li>
+                                            <li class="permission-item">Manage tag categories</li>
+                                            <li class="permission-item">Configure tag settings</li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </label>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      <!-- Add back the tagging section after the guides section -->
-                      <div class="role-group">
-                        <div class="role-header">
-                          <div class="icon-wrapper">
-                            <img src="@/assets/tagging.png" class="role-icon" alt="Tagging icon" />
-                          </div>
-                          <div class="divider"></div>
-                          <div class="role-content">
-                            <span class="role-title">Tagging</span>
-                            <div class="role-options">
-                              <label class="role-option" data-tooltip="Viewer is on by default and cannot be turned off">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="tagging" value="viewer" checked disabled>
-                                  <span>Viewer</span>
-                                </div>
-                                <div class="role-details" v-if="showAppRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item">View all tags</li>
-                                        <li class="permission-item">Access tag analytics</li>
-                                        <li class="permission-item">View tag settings</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-
-                              <label class="role-option">
-                                <div class="checkbox-row">
-                                  <input type="checkbox" name="tagging" value="editor">
-                                  <span>Editor</span>
-                                </div>
-                                <div class="role-details" v-if="showAppRoleDetails">
-                                  <div class="role-details-content">
-                                    <div class="role-details-body">
-                                      <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>tagging viewer</em></li>
-                                        <li class="permission-item">Create and edit tags</li>
-                                        <li class="permission-item">Manage tag categories</li>
-                                        <li class="permission-item">Configure tag settings</li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Only show add button on last permission set -->
-                      <div v-if="index === permissionSets.length - 1" class="permission-set-divider">
-                        <div class="divider-container">
-                          <div class="divider-line"></div>
-                        </div>
-                        <button 
-                          class="add-permission-set" 
-                          :class="{ 'disabled': !canAddPermissionSet }"
-                          :disabled="!canAddPermissionSet"
-                          data-tooltip="Add apps to the first permission set before adding a new one"
-                          @click="addPermissionSet"
-                        >
-                          + Add another permission set
-                        </button>
+                    </div>
+                    <div class="add-permission-set">
+                      <a 
+                        href="#" 
+                        class="add-permission-link"
+                        :class="{ 'disabled': !canAddPermissionSet }"
+                        @mouseenter="showTooltip"
+                        @mouseleave="hideTooltip"
+                        @click.prevent="canAddPermissionSet && addPermissionSet()"
+                      >
+                        + Add another permission set
+                      </a>
+                      <div v-if="showTooltipText && !canAddPermissionSet" class="tooltip">
+                        Select apps in the current permission set to add another
                       </div>
                     </div>
                   </div>
@@ -1371,6 +1333,9 @@ export default {
       showTeamPlaceholder: true,
       // Add new data property for app placeholders
       appPlaceholders: {},
+      // Add showSegmentsRoleDetails to data
+      showSegmentsRoleDetails: false,
+      showTooltipText: false
     }
   },
   computed: {
@@ -1412,9 +1377,8 @@ export default {
       return apps;
     },
     canAddPermissionSet() {
-      // Enable button only if first set has apps and not all apps are selected
-      const firstSet = this.permissionSets[0];
-      return firstSet.selectedApps.length > 0 && firstSet.selectedApps.length < this.appOptions.length;
+      // Check if any permission set has selected apps
+      return this.permissionSets.some(set => set.selectedApps && set.selectedApps.length > 0);
     },
     canInvite() {
       // Check if at least one email is selected
@@ -1541,7 +1505,9 @@ export default {
       this.showSubscriptionRoleDetails = !this.showSubscriptionRoleDetails;
     },
     toggleAppRoleDetails() {
+      // Toggle all role details sections
       this.showAppRoleDetails = !this.showAppRoleDetails;
+      this.showSegmentsRoleDetails = this.showAppRoleDetails;
     },
     toggleApp(app, permissionSetId) {
       if (this.isAppSelectedInOtherSet(app.id, permissionSetId)) {
@@ -1585,21 +1551,14 @@ export default {
       this.appPlaceholders[permissionSetId] = !permissionSet?.selectedApps?.length;
     },
     addPermissionSet() {
-      const newSet = {
-        id: Math.random(),
+      this.permissionSets.push({
+        id: Date.now(),
         selectedApps: [],
-        roles: {
-          guides: [],
-          tagging: [],
-          segments: [],
-          listen: [],
-          roadmaps: []
-        }
-      };
-      
-      this.permissionSets.push(newSet);
+        roles: {},
+        number: this.permissionSets.length + 1
+      });
 
-      // Scroll the wizard content
+      // Scroll to new permission set
       this.$nextTick(() => {
         setTimeout(() => {
           const wizardContent = document.querySelector('.wizard-content');
@@ -1609,7 +1568,7 @@ export default {
               behavior: 'smooth'
             });
           }
-        }, 300);
+        }, 100);
       });
     },
     getUnselectedAppsCount(permissionSet) {
@@ -1788,6 +1747,148 @@ export default {
         this.showTeamPlaceholder = this.selectedTeams.length === 0;
       }, 100);
     },
+    getRolePermissionsTooltip(roleValue) {
+      const tooltips = {
+        viewer: {
+          title: 'Guides: Viewer',
+          permissions: [
+            'View all guides and resource center content',
+            'Access guide analytics',
+            'View guide settings'
+          ]
+        },
+        creator: {
+          title: 'Guides: Creator',
+          permissions: [
+            'All permissions of a guides viewer',
+            'Create and edit guides',
+            'Share guides with other users'
+          ]
+        },
+        publisher: {
+          title: 'Guides: Publisher',
+          permissions: [
+            'All permissions of a guides creator',
+            'Publish guides',
+            'Manage guide publishing workflow'
+          ]
+        },
+        'content-editor': {
+          title: 'Guides: Content Editor',
+          permissions: [
+            'All permissions of a guides viewer',
+            'Edit guide content',
+            'Manage guide content workflow'
+          ]
+        },
+        editor: {
+          title: 'Guides: Editor',
+          permissions: [
+            'All permissions of a guides viewer',
+            'Create and edit guides',
+            'Manage guide settings'
+          ]
+        },
+        'segments-viewer': {
+          title: 'Segments: Viewer',
+          permissions: [
+            'Can view segments.',
+            'Can view reports.'
+          ]
+        },
+        'segments-editor': {
+          title: 'Segments: Editor',
+          permissions: [
+            'Create and edit segments',
+            'Manage segment settings',
+            'Access segment analytics'
+          ]
+        },
+        'segments-verifier': {
+          title: 'Segments: Verifier',
+          permissions: [
+            'All permissions of a segments and reports editor',
+            'Ability to change verification of segments and respond to verification requests.'
+          ]
+        },
+        'listen-viewer': {
+          title: 'Listen: Viewer',
+          permissions: [
+            'View all feedback items',
+            'Access feedback analytics',
+            'View visitor votes and interactions'
+          ]
+        },
+        'listen-editor': {
+          title: 'Listen: Editor',
+          permissions: [
+            'All permissions of a listen editor',
+            'Manage feedback settings',
+            'Delete any feedback items',
+            'Edit any feedback items'
+          ]
+        },
+        'listen-manager': {
+          title: 'Listen: Manager',
+          permissions: [
+            'All permissions of a listen editor',
+            'Manage feedback settings',
+            'Delete any feedback items',
+            'Edit any feedback items'
+          ]
+        },
+        'roadmaps-viewer': {
+          title: 'Roadmaps: Viewer',
+          permissions: [
+            'View all roadmaps',
+            'Access roadmap analytics',
+            'View roadmap settings'
+          ]
+        },
+        'roadmaps-editor': {
+          title: 'Roadmaps: Editor',
+          permissions: [
+            'View all roadmaps',
+            'Access roadmap analytics',
+            'View roadmap settings'
+          ]
+        },
+        'roadmaps-manager': {
+          title: 'Roadmaps: Manager',
+          permissions: [
+            'All permissions of a roadmaps editor',
+            'Manage roadmap settings',
+            'Control roadmap visibility',
+            'Delete any roadmaps'
+          ]
+        }
+      };
+
+      const role = tooltips[roleValue];
+      if (!role) return null;
+
+      return `${role.title}\n${role.permissions.map(p => `• ${p}`).join('\n')}`;
+    },
+    getRoleTooltip(roleValue) {
+      const tooltips = {
+        viewer: 'View all guides and resource center content',
+        'resource-center-author': 'Create and edit resource center content',
+        'resource-center-publisher': 'Publish and manage resource center content',
+        creator: 'Create and edit guides',
+        publisher: 'Publish and manage guide workflow',
+        'content-editor': 'Edit guide content',
+        editor: 'Edit and manage settings'
+      };
+      return tooltips[roleValue];
+    },
+    showTooltip() {
+      if (!this.canAddPermissionSet) {
+        this.showTooltipText = true;
+      }
+    },
+    hideTooltip() {
+      this.showTooltipText = false;
+    }
   },
   mounted() {
     // Close dropdowns when clicking outside
@@ -2422,14 +2523,14 @@ h3 {
 
 .roles-section {
   position: relative;
+  margin-top: 24px;
 }
 
-.roles-section h5 {
+.roles-section h6 {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #2D3748;
   margin: 0 0 16px 0;
-  display: inline-block;
 }
 
 .expand-link {
@@ -2501,6 +2602,7 @@ h3 {
   font-size: 14px;
   color: #2D3748;
   background: white;
+  cursor: pointer;
 }
 
 .role-option:has(input:checked) {
@@ -2509,7 +2611,9 @@ h3 {
 }
 
 .role-option input[type="checkbox"] {
-  flex: 0 0 16px;
+  accent-color: #128297; /* Restore teal color */
+  flex: none;
+  margin: 0;
 }
 
 .role-option span {
@@ -2706,19 +2810,34 @@ h3 {
 }
 
 .add-permission-set {
-  position: relative;
-  font-size: 14px;
-  color: #128297;
-  font-weight: 500;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  white-space: nowrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: center;
 }
 
-.add-permission-set:hover {
+.add-permission-link {
+  color: #128297;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.add-permission-link:hover {
   text-decoration: underline;
+}
+
+/* Add disabled state styles */
+.add-permission-link.disabled {
+  color: #A0AEC0;
+  cursor: not-allowed;
+  pointer-events: auto; /* Override the previous none value */
+}
+
+.add-permission-link.disabled:hover {
+  text-decoration: none;
 }
 
 /* Add styles for multiple permission sets */
@@ -3008,6 +3127,7 @@ h3 {
   font-size: 14px;
   color: #2D3748;
   background: white;
+  cursor: pointer;
 }
 
 /* Fix checkbox row spacing */
@@ -3052,5 +3172,348 @@ h3 {
 /* Keep other app-pills styles consistent */
 .view-only-info + .permissions-wrapper .app-pills {
   padding: 4px;
+}
+
+.role-option:has(input:checked) {
+  background: white;
+  border-color: #128297;
+}
+
+.role-details {
+  margin-top: 12px;
+  padding: 12px;
+  background: #F7FAFC;
+  border-radius: 4px;
+}
+
+.permissions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #4A5568;
+}
+
+.permission-item {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.permission-item:last-child {
+  margin-bottom: 0;
+}
+
+.permission-item.inherited {
+  color: #718096;
+}
+
+.permission-item.inherited em {
+  font-style: italic;
+  color: #4A5568;
+}
+
+.roles-section {
+  position: relative;
+}
+
+.expand-link {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: #128297;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.expand-link:hover {
+  text-decoration: underline;
+}
+
+/* Update role details structure */
+.role-details {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  background: white;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.role-details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-details-body {
+  padding: 0;
+}
+
+/* Add tooltip styles for role options */
+.role-option[data-role-tooltip] {
+  position: relative;
+}
+
+.role-option[data-role-tooltip]:hover::before {
+  content: attr(data-role-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px;
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4A5568;
+  white-space: pre-line;
+  width: 300px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+}
+
+.role-option[data-role-tooltip]:hover::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+  z-index: 1000;
+}
+
+/* Add tooltip styles for permissions */
+.role-option[data-permissions-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+.role-option[data-permissions-tooltip]::before {
+  content: attr(data-permissions-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px;
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4A5568;
+  white-space: pre-line;
+  width: 300px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.role-option[data-permissions-tooltip]:hover::before,
+.role-option[data-permissions-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Add this CSS rule to hide tooltips when roles are expanded */
+.role-option[data-permissions-tooltip]::before,
+.role-option[data-permissions-tooltip]::after {
+  display: none;
+}
+
+/* Show tooltips only when roles are collapsed */
+.role-option[data-permissions-tooltip]:not(:has(.role-details))::before,
+.role-option[data-permissions-tooltip]:not(:has(.role-details))::after {
+  display: block;
+}
+
+/* Add styles for the permission set link */
+.add-permission-set {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.add-permission-link {
+  color: #128297;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.add-permission-link:hover {
+  text-decoration: underline;
+}
+
+/* Add these styles */
+.add-permission-set {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.add-permission-link {
+  color: #128297;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.add-permission-link:hover {
+  text-decoration: underline;
+}
+
+.permission-set-header h5 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 16px 0;
+}
+
+/* Add tooltip styles */
+.add-permission-link.disabled[data-tooltip] {
+  position: relative;
+}
+
+.add-permission-link.disabled[data-tooltip]:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: #000000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+}
+
+.add-permission-link.disabled[data-tooltip]:hover::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+}
+
+/* Add base states for tooltip */
+.add-permission-link.disabled[data-tooltip]::before,
+.add-permission-link.disabled[data-tooltip]::after {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+/* Update tooltip styles */
+.add-permission-set .add-permission-link[data-tooltip] {
+  position: relative;
+  display: inline-block;
+}
+
+.add-permission-set .add-permission-link[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: #000000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.add-permission-set .add-permission-link[data-tooltip]::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.add-permission-set .add-permission-link[data-tooltip]:hover::before,
+.add-permission-set .add-permission-link[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Add tooltip styles */
+.add-permission-set {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: #000000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+}
+
+/* Update styles for both h6 headings */
+.roles-section h6,
+.permission-set-header h6 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 16px 0;
+}
+
+/* Remove any existing h5 styles */
+.permission-set-header h5,
+.roles-section h5 {
+  display: none;
 }
 </style> 
