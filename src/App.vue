@@ -31,9 +31,9 @@
       </div>
     </div>
     <div class="main-content">
-      <Header />
+      <Header @open-wizard="openUserWizard" />
       <div class="content">
-        <UserList />
+        <UserList ref="userList" />
       </div>
     </div>
   </div>
@@ -109,6 +109,9 @@ export default {
   methods: {
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed
+    },
+    openUserWizard() {
+      this.$refs.userList.openWizard();
     }
   }
 }

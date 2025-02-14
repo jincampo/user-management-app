@@ -1,6 +1,5 @@
 <template>
   <div class="users-container">
-  
     <div class="filter-bar">
       <div class="filters">
         <select class="filter-select">
@@ -32,16 +31,38 @@
           <div class="table-cell">{{ user.email }}</div>
           <div class="table-cell">{{ user.permissions }}</div>
           <div class="table-cell">{{ user.group }}</div>
-          <div class="table-cell">{{ user.lastLogin }}</div>
+          <div class="table-cell" :class="{ 'pending': user.lastLogin === 'Invite pending' }">
+            {{ user.lastLogin }}
+          </div>
         </div>
       </div>
     </div>
+
+    <UserWizard 
+      :is-open="showWizard" 
+      @close="closeWizard"
+      @users-invited="handleUsersInvited"
+      :existing-users="users"
+    />
+
+    <Toast 
+      :show="showToast"
+      :email="lastAddedEmail"
+      @close="closeToast"
+    />
   </div>
 </template>
 
 <script>
+import UserWizard from './UserWizard.vue'
+import Toast from './Toast.vue'
+
 export default {
   name: 'UserList',
+  components: {
+    UserWizard,
+    Toast
+  },
   data() {
     return {
       users: [
@@ -93,15 +114,88 @@ export default {
           group: 'Feedback Contributer',
           lastLogin: 'Feb 6, 2025 2:30:55 PM EST'
         }
-      ]
+      ],
+      showWizard: false,
+      showToast: false,
+      lastAddedEmail: ''
+    }
+  },
+  methods: {
+    openWizard() {
+      this.showWizard = true;
+    },
+    closeWizard() {
+      this.showWizard = false;
+    },
+    handleUsersInvited(newUsers) {
+      console.log('Received new users:', newUsers);
+      
+      const formattedUsers = newUsers.map(user => {
+        console.log('Processing user:', user);
+        console.log('User permission sets:', user.permissionSets);
+        
+        const permissions = this.formatPermissions(user);
+        console.log('Formatted permissions:', permissions);
+        
+        return {
+          email: user.email,
+          permissions,
+          group: 'Feedback Contributor',
+          lastLogin: 'Invite pending'
+        };
+      });
+
+      this.users = [...this.users, ...formattedUsers];
+      this.closeWizard();
+
+      if (newUsers.length > 0) {
+        this.lastAddedEmail = newUsers[0].email;
+        this.showToast = true;
+        setTimeout(() => {
+          this.closeToast();
+        }, 5000);
+      }
+    },
+
+    formatPermissions(user) {
+      if (!user.permissionSets || user.permissionSets.length === 0) {
+        return 'Viewer';
+      }
+
+      // Count total apps across all permission sets
+      const totalApps = user.permissionSets.reduce((total, set) => {
+        return total + (set.apps?.length || 0);
+      }, 0);
+
+      const totalRoles = user.permissionSets.reduce((total, set) => {
+        if (!set.roles) return total;
+
+        let roleCount = 0;
+
+        // Count roles for each category
+        Object.entries(set.roles).forEach(([category, roles]) => {
+          // Each role in the array represents a selected role
+          roleCount += roles.length;
+        });
+
+        return total + roleCount;
+      }, 0);
+
+      if (totalRoles === 0) {
+        return totalApps > 0 ? `User : 0 roles across ${totalApps} ${totalApps === 1 ? 'app' : 'apps'}` : 'Viewer';
+      }
+
+      return `User : ${totalRoles} ${totalRoles === 1 ? 'role' : 'roles'} across ${totalApps} ${totalApps === 1 ? 'app' : 'apps'}`;
+    },
+
+    closeToast() {
+      this.showToast = false;
     }
   }
 }
 </script>
 
 <style scoped>
-
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -116,20 +210,19 @@ export default {
   margin: 0;
 }
 
-.add-user-btn {
-  background: #00B5D1;
+.pendo-button.primary {
+  background: #128297;
   color: white;
-  border: none;
+  border: 1px solid #128297;
   padding: 8px 16px;
   border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
   font-size: 14px;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.add-user-btn:hover {
-  background: #009BB3;
+.pendo-button.primary:hover {
+  background: #0F6B7B;
 }
 
 .tabs {
@@ -251,6 +344,22 @@ export default {
   font-size: 14px;
   color: #2C3E50;
   padding: 4px 0;
+}
+
+.table-cell.pending {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-cell.pending::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: #F6C000;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* Remove old table styles */
