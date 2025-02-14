@@ -30,7 +30,7 @@ export default {
 }
 
 .header-content h1 {
-  font-size: 46.184px;
+  font-size: 36px;
   line-height: 130%;
   font-weight: 600;
   color: #1A202C;
