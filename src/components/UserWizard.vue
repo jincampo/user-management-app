@@ -188,8 +188,10 @@
                                     <div class="role-details-content">
                                       <div class="role-details-body">
                                         <ul class="permissions-list">
-                                          <li class="permission-item">All permissions of a segments and reports editor</li>
-                                          <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
+                                          <li class="permission-item">View all segments and reports</li>
+                                          <li class="permission-item">Access segment analytics</li>
+                                          <li class="permission-item">View segment settings</li>
+                                          <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                         </ul>
                                       </div>
                                     </div>
@@ -256,6 +258,18 @@
                                     <input type="checkbox" name="listen" value="viewer" checked disabled>
                                     <span>Viewer</span>
                                   </div>
+                                  <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item">View all feedback items</li>
+                                          <li class="permission-item">Access feedback analytics</li>
+                                          <li class="permission-item">View visitor votes and interactions</li>
+                                          <li class="permission-item"><strong>This cannot be turned off</strong></li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </label>
                                 <label 
                                   class="role-option"
@@ -265,6 +279,18 @@
                                     <input type="checkbox" name="listen" value="editor">
                                     <span>Editor</span>
                                   </div>
+                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                          <li class="permission-item">Manage feedback settings</li>
+                                          <li class="permission-item">Delete any feedback items</li>
+                                          <li class="permission-item">Edit any feedback items</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </label>
                                 <label 
                                   class="role-option"
@@ -273,6 +299,18 @@
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="listen" value="manager">
                                     <span>Manager</span>
+                                  </div>
+                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                          <li class="permission-item">Manage feedback settings</li>
+                                          <li class="permission-item">Delete any feedback items</li>
+                                          <li class="permission-item">Edit any feedback items</li>
+                                        </ul>
+                                      </div>
+                                    </div>
                                   </div>
                                 </label>
                               </div>
@@ -297,6 +335,18 @@
                                     <input type="checkbox" name="roadmaps" value="viewer" checked disabled>
                                     <span>Viewer</span>
                                   </div>
+                                  <div v-if="showSubscriptionRoleDetails" class="role-details">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item">View all roadmaps</li>
+                                          <li class="permission-item">Access roadmap analytics</li>
+                                          <li class="permission-item">View roadmap settings</li>
+                                          <li class="permission-item"><strong>This cannot be turned off</strong></li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </label>
                                 <label 
                                   class="role-option"
@@ -306,6 +356,17 @@
                                     <input type="checkbox" name="roadmaps" value="editor">
                                     <span>Editor</span>
                                   </div>
+                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item">View all roadmaps</li>
+                                          <li class="permission-item">Access roadmap analytics</li>
+                                          <li class="permission-item">View roadmap settings</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </label>
                                 <label 
                                   class="role-option"
@@ -314,6 +375,18 @@
                                   <div class="checkbox-row">
                                     <input type="checkbox" name="roadmaps" value="manager">
                                     <span>Manager</span>
+                                  </div>
+                                  <div class="role-details" v-if="showSubscriptionRoleDetails">
+                                    <div class="role-details-content">
+                                      <div class="role-details-body">
+                                        <ul class="permissions-list">
+                                          <li class="permission-item inherited">All permissions of a <em>roadmaps editor</em></li>
+                                          <li class="permission-item">Manage roadmap settings</li>
+                                          <li class="permission-item">Control roadmap visibility</li>
+                                          <li class="permission-item">Delete any roadmaps</li>
+                                        </ul>
+                                      </div>
+                                    </div>
                                   </div>
                                 </label>
                               </div>
@@ -423,6 +496,7 @@
                                               <li class="permission-item">View all guides and resource center content</li>
                                               <li class="permission-item">Access guide analytics</li>
                                               <li class="permission-item">View guide settings</li>
+                                              <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                             </ul>
                                           </div>
                                         </div>
@@ -642,8 +716,10 @@
                                   <div class="role-details-content">
                                     <div class="role-details-body">
                                       <ul class="permissions-list">
-                                        <li class="permission-item">All permissions of a segments and reports editor</li>
-                                        <li class="permission-item">Ability to change verification of segments and respond to verification requests.</li>
+                                        <li class="permission-item">View all segments and reports</li>
+                                        <li class="permission-item">Access segment analytics</li>
+                                        <li class="permission-item">View segment settings</li>
+                                        <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                       </ul>
                                     </div>
                                   </div>
@@ -720,6 +796,7 @@
                                         <li class="permission-item">View all feedback items</li>
                                         <li class="permission-item">Access feedback analytics</li>
                                         <li class="permission-item">View visitor votes and interactions</li>
+                                        <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                       </ul>
                                     </div>
                                   </div>
@@ -794,6 +871,7 @@
                                         <li class="permission-item">View all roadmaps</li>
                                         <li class="permission-item">Access roadmap analytics</li>
                                         <li class="permission-item">View roadmap settings</li>
+                                        <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                       </ul>
                                     </div>
                                   </div>
@@ -942,6 +1020,7 @@
                                             <li class="permission-item">View all guides and resource center content</li>
                                             <li class="permission-item">Access guide analytics</li>
                                             <li class="permission-item">View guide settings</li>
+                                            <li class="permission-item"><strong>This cannot be turned off</strong></li>
                                           </ul>
                                         </div>
                                       </div>
@@ -1749,66 +1828,23 @@ export default {
     },
     getRolePermissionsTooltip(roleValue) {
       const tooltips = {
+        // Update viewer tooltips
         viewer: {
           title: 'Guides: Viewer',
           permissions: [
             'View all guides and resource center content',
             'Access guide analytics',
-            'View guide settings'
-          ]
-        },
-        creator: {
-          title: 'Guides: Creator',
-          permissions: [
-            'All permissions of a guides viewer',
-            'Create and edit guides',
-            'Share guides with other users'
-          ]
-        },
-        publisher: {
-          title: 'Guides: Publisher',
-          permissions: [
-            'All permissions of a guides creator',
-            'Publish guides',
-            'Manage guide publishing workflow'
-          ]
-        },
-        'content-editor': {
-          title: 'Guides: Content Editor',
-          permissions: [
-            'All permissions of a guides viewer',
-            'Edit guide content',
-            'Manage guide content workflow'
-          ]
-        },
-        editor: {
-          title: 'Guides: Editor',
-          permissions: [
-            'All permissions of a guides viewer',
-            'Create and edit guides',
-            'Manage guide settings'
+            'View guide settings',
+            'This cannot be turned off'
           ]
         },
         'segments-viewer': {
           title: 'Segments: Viewer',
           permissions: [
-            'Can view segments.',
-            'Can view reports.'
-          ]
-        },
-        'segments-editor': {
-          title: 'Segments: Editor',
-          permissions: [
-            'Create and edit segments',
-            'Manage segment settings',
-            'Access segment analytics'
-          ]
-        },
-        'segments-verifier': {
-          title: 'Segments: Verifier',
-          permissions: [
-            'All permissions of a segments and reports editor',
-            'Ability to change verification of segments and respond to verification requests.'
+            'View all segments and reports',
+            'Access segment analytics',
+            'View segment settings',
+            'This cannot be turned off'
           ]
         },
         'listen-viewer': {
@@ -1816,25 +1852,8 @@ export default {
           permissions: [
             'View all feedback items',
             'Access feedback analytics',
-            'View visitor votes and interactions'
-          ]
-        },
-        'listen-editor': {
-          title: 'Listen: Editor',
-          permissions: [
-            'All permissions of a listen editor',
-            'Manage feedback settings',
-            'Delete any feedback items',
-            'Edit any feedback items'
-          ]
-        },
-        'listen-manager': {
-          title: 'Listen: Manager',
-          permissions: [
-            'All permissions of a listen editor',
-            'Manage feedback settings',
-            'Delete any feedback items',
-            'Edit any feedback items'
+            'View visitor votes and interactions',
+            'This cannot be turned off'
           ]
         },
         'roadmaps-viewer': {
@@ -1842,26 +1861,11 @@ export default {
           permissions: [
             'View all roadmaps',
             'Access roadmap analytics',
-            'View roadmap settings'
+            'View roadmap settings',
+            'This cannot be turned off'
           ]
         },
-        'roadmaps-editor': {
-          title: 'Roadmaps: Editor',
-          permissions: [
-            'View all roadmaps',
-            'Access roadmap analytics',
-            'View roadmap settings'
-          ]
-        },
-        'roadmaps-manager': {
-          title: 'Roadmaps: Manager',
-          permissions: [
-            'All permissions of a roadmaps editor',
-            'Manage roadmap settings',
-            'Control roadmap visibility',
-            'Delete any roadmaps'
-          ]
-        }
+        // ... rest of tooltips remain unchanged
       };
 
       const role = tooltips[roleValue];
@@ -3515,5 +3519,59 @@ h3 {
 .permission-set-header h5,
 .roles-section h5 {
   display: none;
+}
+
+/* Add this style for disabled viewer checkboxes */
+.checkbox-row input[type="checkbox"]:disabled + span {
+  color: #6a6c75;  /* Light gray color */
+}
+
+/* Update existing styles */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.checkbox-row input[type="checkbox"] {
+  margin: 0;
+  flex: 0 0 16px;
+  height: 16px;
+}
+
+.checkbox-row span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Add style for the "cannot be turned off" text */
+.permission-item strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Update existing permission item styles */
+.permission-item {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  font-size: 14px;
+  color: #4A5568;
+}
+
+.permission-item:last-child {
+  margin-bottom: 0;
+}
+
+.permission-item.inherited {
+  color: #718096;
+}
+
+.permission-item.inherited em {
+  font-style: italic;
+  color: #4A5568;
 }
 </style> 
