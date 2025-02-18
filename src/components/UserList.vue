@@ -29,7 +29,15 @@
       <div class="table-body">
         <div class="table-row" v-for="user in users" :key="user.email">
           <div class="table-cell">{{ user.email }}</div>
-          <div class="table-cell">{{ user.permissions }}</div>
+          <div class="table-cell">
+            <span v-if="user.isAdmin" class="admin-badge">
+              Subscription admin
+            </span>
+            <span v-else>
+              <span class="user-prefix">User : </span>
+              <span class="role-link">{{ user.role.replace('User : ', '') }}</span>
+            </span>
+          </div>
           <div class="table-cell">{{ user.group }}</div>
           <div class="table-cell" :class="{ 'pending': user.lastLogin === 'Invite pending' }">
             {{ user.lastLogin }}
@@ -68,49 +76,57 @@ export default {
       users: [
         {
           email: 'sarah.parker@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Feedback Contributer',
           lastLogin: 'Feb 5, 2025 11:29:53 AM EST'
         },
         {
           email: 'james.wilson@acme.co',
-          permissions: 'User : 3 roles across 27 apps',
+          isAdmin: false,
+          role: 'User : 3 roles across 27 apps',
           group: 'Feedback Contributer',
           lastLogin: 'Feb 3, 2025 4:43:24 PM EST'
         },
         {
           email: 'michael.chen@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Administrator',
           lastLogin: 'Jan 22, 2025 9:37:00 AM EST'
         },
         {
           email: 'emma.rodriguez@acme.co',
-          permissions: 'User : 5 roles across 27 apps',
+          isAdmin: false,
+          role: 'User : 5 roles across 27 apps',
           group: 'Administrator',
           lastLogin: 'Feb 5, 2025 3:25:06 PM EST'
         },
         {
           email: 'david.smith@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Feedback Contributer',
           lastLogin: 'Jan 2, 2025 12:47:42 PM EST'
         },
         {
           email: 'lisa.thompson@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Feedback Contributer',
           lastLogin: 'Aug 13, 2024 11:44:01 AM EDT'
         },
         {
           email: 'robert.garcia@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Feedback Contributer',
           lastLogin: 'Nov 18, 2024 7:48:28 AM EST'
         },
         {
           email: 'jennifer.miller@acme.co',
-          permissions: 'Super',
+          isAdmin: true,
+          role: '',
           group: 'Feedback Contributer',
           lastLogin: 'Feb 6, 2025 2:30:55 PM EST'
         }
@@ -139,7 +155,8 @@ export default {
         
         return {
           email: user.email,
-          permissions,
+          isAdmin: user.isAdmin,
+          role: permissions,
           group: 'Feedback Contributor',
           lastLogin: 'Invite pending'
         };
@@ -365,5 +382,25 @@ export default {
 /* Remove old table styles */
 table, th, td {
   display: none;
+}
+
+.admin-badge {
+  color: #2C3E50;
+  font-weight: normal;
+}
+
+.user-prefix {
+  color: #2C3E50;  /* Regular text color */
+  font-weight: normal;
+}
+
+.role-link {
+  color: #128297;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.role-link:hover {
+  text-decoration: underline;
 }
 </style> 
