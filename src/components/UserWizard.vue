@@ -368,6 +368,32 @@
                                     @click.stop
                                   >
                                 </div>
+                                
+                                <!-- Add quick filter options -->
+                                <div class="quick-filters">
+                                  <div 
+                                    class="filter-option"
+                                    @click.stop="selectAllApps(permissionSet.id)"
+                                  >
+                                    All apps
+                                  </div>
+                                  <div 
+                                    class="filter-option"
+                                    @click.stop="selectAppsByType(permissionSet.id, 'web')"
+                                  >
+                                    Web apps
+                                  </div>
+                                  <div 
+                                    class="filter-option"
+                                    @click.stop="selectAppsByType(permissionSet.id, 'mobile')"
+                                  >
+                                    Mobile apps
+                                  </div>
+                                </div>
+
+                                <div class="dropdown-divider"></div>
+
+                                <!-- Existing app options -->
                                 <div 
                                   v-for="app in filteredApps" 
                                   :key="app.id"
@@ -587,15 +613,11 @@
         href="#" 
         class="add-permission-link"
         :class="{ 'disabled': !canAddPermissionSet }"
-        @mouseenter="showTooltip"
-        @mouseleave="hideTooltip"
+        :data-tooltip="getAddPermissionSetTooltip"
         @click.prevent="canAddPermissionSet && addPermissionSet()"
       >
         + Add another permission set
       </a>
-      <div v-if="showTooltipText && !canAddPermissionSet" class="tooltip">
-        Select apps in the current permission set to add another
-      </div>
     </div>
                     </div>
                   </div>
@@ -887,6 +909,32 @@
                                   @click.stop
                                 >
                               </div>
+                              
+                              <!-- Add quick filter options -->
+                              <div class="quick-filters">
+                                <div 
+                                  class="filter-option"
+                                  @click.stop="selectAllApps(permissionSet.id)"
+                                >
+                                  All apps
+                                </div>
+                                <div 
+                                  class="filter-option"
+                                  @click.stop="selectAppsByType(permissionSet.id, 'web')"
+                                >
+                                  Web apps
+                                </div>
+                                <div 
+                                  class="filter-option"
+                                  @click.stop="selectAppsByType(permissionSet.id, 'mobile')"
+                                >
+                                  Mobile apps
+                                </div>
+                              </div>
+
+                              <div class="dropdown-divider"></div>
+
+                              <!-- Existing app options -->
                               <div 
                                 v-for="app in filteredApps" 
                                 :key="app.id"
@@ -1105,15 +1153,11 @@
                         href="#" 
                         class="add-permission-link"
                         :class="{ 'disabled': !canAddPermissionSet }"
-                        @mouseenter="showTooltip"
-                        @mouseleave="hideTooltip"
+                        :data-tooltip="getAddPermissionSetTooltip"
                         @click.prevent="canAddPermissionSet && addPermissionSet()"
                       >
                         + Add another permission set
                       </a>
-                      <div v-if="showTooltipText && !canAddPermissionSet" class="tooltip">
-                        Select apps in the current permission set to add another
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1320,7 +1364,7 @@ export default {
         { id: 20, name: 'Status Page' }
       ],
       permissionSets: [{
-        id: Math.random(),
+        id: Date.now(),
         selectedApps: [],
         roles: {
           guides: [],
@@ -1335,7 +1379,20 @@ export default {
       appPlaceholders: {},
       // Add showSegmentsRoleDetails to data
       showSegmentsRoleDetails: false,
-      showTooltipText: false
+      showTooltipText: false,
+      // Add apps data with type property
+      apps: [
+        { id: 1, name: 'Web App 1', type: 'web' },
+        { id: 2, name: 'Web App 2', type: 'web' },
+        { id: 3, name: 'Mobile App 1', type: 'mobile' },
+        { id: 4, name: 'Mobile App 2', type: 'mobile' },
+        { id: 5, name: 'Web App 3', type: 'web' },
+        { id: 6, name: 'Mobile App 3', type: 'mobile' },
+        { id: 7, name: 'Web App 4', type: 'web' },
+        { id: 8, name: 'Mobile App 4', type: 'mobile' },
+        { id: 9, name: 'Web App 5', type: 'web' },
+        { id: 10, name: 'Mobile App 5', type: 'mobile' }
+      ],
     }
   },
   computed: {
@@ -1377,8 +1434,15 @@ export default {
       return apps;
     },
     canAddPermissionSet() {
-      // Check if any permission set has selected apps
-      return this.permissionSets.some(set => set.selectedApps && set.selectedApps.length > 0);
+      // Get all selected apps across all permission sets
+      const selectedApps = this.permissionSets.flatMap(set => set.selectedApps);
+      
+      // Get total number of available apps
+      const totalApps = this.appOptions.length;
+      
+      // Check if any permission set has apps selected and if there are any apps left to select
+      return this.permissionSets.some(set => set.selectedApps.length > 0) && 
+             selectedApps.length < totalApps;
     },
     canInvite() {
       // Check if at least one email is selected
@@ -1412,6 +1476,20 @@ export default {
     },
     unusedAppsList() {
       return this.unusedApps.map(app => app.name).join(', ');
+    },
+    getAddPermissionSetTooltip() {
+      // If no permission set has apps selected
+      if (!this.permissionSets.some(set => set.selectedApps.length > 0)) {
+        return 'Select apps in the current permission set to add another';
+      }
+      
+      // If all apps are selected
+      const selectedApps = this.permissionSets.flatMap(set => set.selectedApps);
+      if (selectedApps.length >= this.appOptions.length) {
+        return 'All apps are already in a permission set';
+      }
+      
+      return '';
     }
   },
   methods: {
@@ -1586,61 +1664,34 @@ export default {
       return `Apps: ${unselectedApps}`;
     },
     inviteUser() {
-      // Create new users from selected emails
-      const newUsers = this.selectedEmails.map(email => {
-        const id = Math.max(0, ...this.existingUsers.map(u => u.id)) + 1;
-        
+      // Add null checks and default values
+      const invitedUsers = this.selectedEmails.map(email => {
+        // Create base user object
         const user = {
-          id,
           email,
-          name: email.split('@')[0],
-          status: 'Pending',
-          role: this.selectedPermission === 'copy' ? 'Custom' : 'Custom',
-          teams: this.selectedTeams,
-          dateAdded: new Date().toISOString().split('T')[0],
-          permissionSets: []
-        };
-
-        if (this.selectedPermission === 'copy' && this.selectedUser) {
-          user.permissionSets = [...this.selectedUser.permissionSets];
-        }
-        
-        if (this.selectedPermission === 'scratch') {
-          user.permissionSets = this.permissionSets.map(set => ({
-            apps: [...set.selectedApps],
+          permissionSets: this.permissionSets.map(set => ({
+            apps: [...(set.selectedApps || [])],
             roles: {
-              guides: [...set.roles.guides],
-              tagging: [...set.roles.tagging]
+              guides: [...(set.roles.guides || [])],
+              tagging: [...(set.roles.tagging || [])],
+              segments: [...(set.roles.segments || [])],
+              listen: [...(set.roles.listen || [])],
+              roadmaps: [...(set.roles.roadmaps || [])]
             }
-          }));
-        }
+          })),
+          selectedTeams: [...(this.selectedTeams || [])],
+          isAdmin: this.selectedPermission === 'admin'
+        };
 
         return user;
       });
 
-      // Emit event to add users to the table
-      this.$emit('users-invited', newUsers);
-      
-      // Show toast notification
-      const userCount = newUsers.length;
-      const userList = newUsers.map(user => user.email).join(', ');
-      
-      this.$emit('show-toast', {
-        type: 'success',
-        message: `${userCount} ${userCount === 1 ? 'user' : 'users'} invited: ${userList}`
-      });
-      
-      // Close and reset
+      this.$emit('users-invited', invitedUsers);
       this.close();
-      this.resetForm();
     },
     resetForm() {
-      this.selectedEmails = [];
-      this.selectedTeams = [];
-      this.selectedPermission = null;
-      this.selectedUser = null;
       this.permissionSets = [{
-        id: Math.random(),
+        id: Date.now(),
         selectedApps: [],
         roles: {
           guides: [],
@@ -1650,6 +1701,10 @@ export default {
           roadmaps: []
         }
       }];
+      this.selectedEmails = [];
+      this.selectedTeams = [];
+      this.selectedPermission = null;
+      this.selectedUser = null;
     },
     isAppSelectedInOtherSet(appId, currentSetId) {
       return this.permissionSets.some(set => 
@@ -1735,8 +1790,8 @@ export default {
       return app ? app.name : '';
     },
     getAppType(appId) {
-      const app = this.appOptions.find(a => a.id === appId);
-      return app?.type || 'desktop'; // Default to desktop if type not specified
+      const app = this.apps.find(a => a.id === appId);
+      return app ? app.type : 'web'; // Return web as default if app not found
     },
     handleTeamFocus() {
       this.showTeamDropdown = true;
@@ -1888,6 +1943,36 @@ export default {
     },
     hideTooltip() {
       this.showTooltipText = false;
+    },
+    // Add methods for handling quick filters
+    selectAllApps(permissionSetId) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (permissionSet) {
+        const availableApps = this.appOptions.filter(app => 
+          !this.isAppSelectedInOtherSet(app.id, permissionSetId)
+        );
+        permissionSet.selectedApps = availableApps.map(app => app.id);
+      }
+      this.openAppDropdowns[permissionSetId] = false;
+    },
+
+    selectAppsByType(permissionSetId, type) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (permissionSet) {
+        // Select all apps of specified type from appOptions
+        const availableApps = this.appOptions.filter(app => 
+          this.getAppType(app.id) === type && 
+          !this.isAppSelectedInOtherSet(app.id, permissionSetId)
+        );
+        permissionSet.selectedApps = availableApps.map(app => app.id);
+      }
+      this.openAppDropdowns[permissionSetId] = false;
+    },
+
+    // Helper method to get app type
+    getAppType(appId) {
+      const app = this.apps.find(a => a.id === appId);
+      return app ? app.type : 'web'; // Return web as default if app not found
     }
   },
   mounted() {
@@ -3542,5 +3627,27 @@ h3 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Add styles for quick filters */
+.quick-filters {
+  padding: 8px 0;
+}
+
+.filter-option {
+  padding: 8px 12px;
+  color: #128297;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.filter-option:hover {
+  background: #F7FAFC;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #E2E8F0;
+  margin: 0;
 }
 </style> 
