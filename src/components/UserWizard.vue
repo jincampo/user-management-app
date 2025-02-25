@@ -15,7 +15,7 @@
                 <div class="form-group">
                   <label>Emails <span class="required">*</span></label>
                   <div class="typeahead-container">
-                    <div class="input-wrapper">
+                    <div class="input-wrapper" :class="{ 'error': showEmailError }">
                       <div class="email-pills">
                         <span v-for="email in selectedEmails" :key="email" class="email-pill">
                           {{ email }}
@@ -26,14 +26,16 @@
                         type="text" 
                         v-model="emailSearch"
                         @focus="handleFocus"
-                        @blur="handleBlur"
+                        @blur="handleEmailBlur"
                         @input="filterEmails"
                         @keydown="handleKeydown"
+                        @paste="handlePaste"
                         :placeholder="inputPlaceholder"
                         :class="{ 'hide-placeholder': !showInputPlaceholder }"
                         ref="emailInput"
                       >
                     </div>
+                    <div v-if="showEmailError" class="error-message">Please enter a valid email address</div>
                     <div v-if="showDropdown" class="email-dropdown">
                       <div 
                         class="email-option" 
@@ -259,11 +261,11 @@
                                 </label>
                                 <label 
                                   class="role-option"
-                                  :data-permissions-tooltip="getRolePermissionsTooltip('listen-editor')"
+                                  :data-permissions-tooltip="getRolePermissionsTooltip('listen-contributor')"
                                 >
                                   <div class="checkbox-row">
-                                    <input type="checkbox" name="listen" value="editor">
-                                    <span>Editor</span>
+                                    <input type="checkbox" name="listen" value="contributor">
+                                    <span>Contributor</span>
                                   </div>
                                 </label>
                                 <label 
@@ -339,18 +341,26 @@
                         <div class="permission-set-header">
                           <h6>Permission set {{ index + 1 }}</h6>
                           <div class="form-group">
-                            <label>Apps <span class="required">*</span></label>
+                            <label>Apps <span v-if="index > 0" class="required">*</span></label>
                             <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
                               <div class="select-wrapper">
                                 <div class="app-pills">
-                                  <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
-                                    <span class="app-icon">
-                                      <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
-                                      <Monitor v-else size="14" />
+                                  <template v-if="isAllAppsSelected(permissionSet.id)">
+                                    <span class="app-pill all-apps-pill">
+                                      All apps
+                                      <button class="remove-pill" @click.stop="clearAllApps(permissionSet.id)">×</button>
                                     </span>
-                                    {{ getAppName(appId) }}
-                                    <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
-                                  </span>
+                                  </template>
+                                  <template v-else>
+                                    <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                      <span class="app-icon">
+                                        <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
+                                        <Monitor v-else size="14" />
+                                      </span>
+                                      {{ getAppName(appId) }}
+                                      <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
+                                    </span>
+                                  </template>
                                 </div>
                                 <input 
                                   type="text" 
@@ -750,13 +760,13 @@
                               <label class="role-option" :data-permissions-tooltip="getRolePermissionsTooltip('listen-editor')">
                                 <div class="checkbox-row">
                                   <input type="checkbox" name="listen" value="editor">
-                                  <span>Editor</span>
+                                  <span>Contributor</span>
                                 </div>
                                 <div class="role-details" v-if="showSubscriptionRoleDetails">
                                   <div class="role-details-content">
                                     <div class="role-details-body">
                                       <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item inherited">All permissions of a <em>listen viewer</em></li>
                                         <li class="permission-item">Manage feedback settings</li>
                                         <li class="permission-item">Delete any feedback items</li>
                                         <li class="permission-item">Edit any feedback items</li>
@@ -774,7 +784,7 @@
                                   <div class="role-details-content">
                                     <div class="role-details-body">
                                       <ul class="permissions-list">
-                                        <li class="permission-item inherited">All permissions of a <em>listen editor</em></li>
+                                        <li class="permission-item inherited">All permissions of a <em>listen contributor</em></li>
                                         <li class="permission-item">Manage feedback settings</li>
                                         <li class="permission-item">Delete any feedback items</li>
                                         <li class="permission-item">Edit any feedback items</li>
@@ -880,18 +890,26 @@
                       <div class="permission-set-header">
                         <h6>Permission set {{ index + 1 }}</h6>
                         <div class="form-group">
-                          <label>Apps <span class="required">*</span></label>
+                          <label>Apps <span v-if="index > 0" class="required">*</span></label>
                           <div class="select-container" v-click-outside="() => handleClickOutside(permissionSet.id)">
                             <div class="select-wrapper">
                               <div class="app-pills">
-                                <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
-                                  <span class="app-icon">
-                                    <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
-                                    <Monitor v-else size="14" />
+                                <template v-if="isAllAppsSelected(permissionSet.id)">
+                                  <span class="app-pill all-apps-pill">
+                                    All apps
+                                    <button class="remove-pill" @click.stop="clearAllApps(permissionSet.id)">×</button>
                                   </span>
-                                  {{ getAppName(appId) }}
-                                  <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
-                                </span>
+                                </template>
+                                <template v-else>
+                                  <span v-for="appId in permissionSet.selectedApps" :key="appId" class="app-pill">
+                                    <span class="app-icon">
+                                      <Smartphone v-if="getAppType(appId) === 'mobile'" size="14" />
+                                      <Monitor v-else size="14" />
+                                    </span>
+                                    {{ getAppName(appId) }}
+                                    <button class="remove-pill" @click.stop="removeApp(appId, permissionSet.id)">×</button>
+                                  </span>
+                                </template>
                               </div>
                               <input 
                                 type="text" 
@@ -1393,6 +1411,7 @@ export default {
         { id: 9, name: 'Web App 5', type: 'web' },
         { id: 10, name: 'Mobile App 5', type: 'mobile' }
       ],
+      showEmailError: false,
     }
   },
   computed: {
@@ -1413,8 +1432,7 @@ export default {
       );
     },
     isValidEmail() {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return this.emailSearch && emailRegex.test(this.emailSearch);
+      return this.emailSearch && this.isValidEmailFormat(this.emailSearch);
     },
     filteredTeams() {
       if (!this.teamFilter) return this.teamOptions;
@@ -1460,10 +1478,19 @@ export default {
         return false;
       }
 
-      // If scratch option is selected, check if at least one app is selected in any permission set
-      if (this.selectedPermission === 'scratch') {
-        const hasSelectedApps = this.permissionSets.some(set => set.selectedApps.length > 0);
-        if (!hasSelectedApps) {
+      // If scratch or copy option is selected, check app selections
+      if (this.selectedPermission === 'scratch' || this.selectedPermission === 'copy') {
+        // First permission set can be empty, but others must have apps selected
+        const hasValidAppSelections = this.permissionSets.every((set, index) => 
+          index === 0 || set.selectedApps.length > 0
+        );
+        
+        // At least one permission set must have apps selected OR the first set can be empty
+        // if there's only one permission set
+        const hasAnyApps = this.permissionSets.some(set => set.selectedApps.length > 0) || 
+                          (this.permissionSets.length === 1);
+        
+        if (!hasValidAppSelections || !hasAnyApps) {
           return false;
         }
       }
@@ -1497,12 +1524,9 @@ export default {
       this.selectedPermission = null;
       this.$emit('close')
     },
-    selectEmail(email) {
-      if (this.isValidEmail && !this.selectedEmails.includes(this.emailSearch)) {
-        this.selectedEmails.push(this.emailSearch);
-      }
-      this.emailSearch = '';
-      this.$refs.emailInput.focus();
+    selectEmail() {
+      // Use the processEmails method to handle both single emails and comma-separated lists
+      this.processEmails();
     },
     removeEmail(email) {
       this.selectedEmails = this.selectedEmails.filter(e => e !== email);
@@ -1518,7 +1542,84 @@ export default {
         this.showInputPlaceholder = false;
       }
     },
+    handleEmailBlur() {
+      this.handleBlur();
+      
+      // Check if there's text in the input field and it's not a valid email
+      if (this.emailSearch && !this.isValidEmailFormat(this.emailSearch)) {
+        this.showEmailError = true;
+      } else {
+        this.showEmailError = false;
+        
+        // If there's a valid email, add it
+        if (this.emailSearch && this.isValidEmailFormat(this.emailSearch)) {
+          this.processEmails();
+        }
+      }
+    },
     handleKeydown(e) {
+      // Handle Enter key
+      if (e.key === 'Enter') {
+        this.processEmails();
+      }
+      // Handle comma key
+      else if (e.key === ',') {
+        e.preventDefault(); // Prevent the comma from being added to the input
+        this.processEmails();
+      }
+    },
+    handlePaste(e) {
+      // Prevent the default paste behavior
+      e.preventDefault();
+      
+      // Get the pasted text
+      const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+      
+      // Process the pasted text immediately
+      if (pastedText) {
+        // Split by commas and process each email
+        const emails = pastedText.split(',').map(email => email.trim()).filter(email => email);
+        
+        emails.forEach(email => {
+          // Check if it's a valid email and not already in the list
+          if (this.isValidEmailFormat(email) && !this.selectedEmails.includes(email)) {
+            this.selectedEmails.push(email);
+          }
+        });
+      }
+    },
+    processEmails() {
+      // Split by commas and process each email
+      const emails = this.emailSearch.split(',').map(email => email.trim()).filter(email => email);
+      
+      let validEmailsAdded = false;
+      
+      emails.forEach(email => {
+        // Check if it's a valid email and not already in the list
+        if (this.isValidEmailFormat(email) && !this.selectedEmails.includes(email)) {
+          this.selectedEmails.push(email);
+          validEmailsAdded = true;
+        }
+      });
+      
+      // Clear the input field only if at least one valid email was added
+      if (validEmailsAdded || emails.length === 0) {
+        this.emailSearch = '';
+      } else {
+        // If no valid emails were found, keep the text for the user to correct
+        // But remove any commas to prevent further splitting
+        this.emailSearch = this.emailSearch.replace(/,/g, '');
+      }
+    },
+    // Add a method to validate email format
+    isValidEmailFormat(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    },
+    selectPermission(permissionId) {
+      this.selectedPermission = permissionId;
+
+      // Add smooth scroll for all permission selections
       if (e.key === 'Enter' && this.isValidEmail) {
         this.selectEmail();
       }
@@ -1875,9 +1976,9 @@ export default {
           ]
         },
         'listen-editor': {
-          title: 'Listen: Editor',
+          title: 'Listen: Contributor',
           permissions: [
-            'All permissions of a listen editor',
+            'All permissions of a listen viewer',
             'Manage feedback settings',
             'Delete any feedback items',
             'Edit any feedback items'
@@ -1886,7 +1987,7 @@ export default {
         'listen-manager': {
           title: 'Listen: Manager',
           permissions: [
-            'All permissions of a listen editor',
+            'All permissions of a listen contributor',
             'Manage feedback settings',
             'Delete any feedback items',
             'Edit any feedback items'
@@ -1916,7 +2017,34 @@ export default {
             'Control roadmap visibility',
             'Delete any roadmaps'
           ]
-        }
+        },
+        'resource-center-author': {
+          title: 'Resource Center: Author',
+          permissions: [
+            'All permissions of a guides viewer',
+            'Create and edit resource center content',
+            'Manage resource center categories'
+          ]
+        },
+        'resource-center-publisher': {
+          title: 'Resource Center: Publisher',
+          permissions: [
+            'All permissions of a resource center author',
+            'Publish resource center content',
+            'Manage resource center publishing workflow'
+          ]
+        },
+        'listen-contributor': {
+          title: 'Listen: Contributor',
+          permissions: [
+            'All permissions of a listen viewer',
+            'Create feedback items',
+            'Edit feedback items they created',
+            'Link feedback items to ideas',
+            'Add visitor votes',
+            'Remove votes they\'ve added'
+          ]
+        },
       };
 
       const role = tooltips[roleValue];
@@ -1973,6 +2101,25 @@ export default {
     getAppType(appId) {
       const app = this.apps.find(a => a.id === appId);
       return app ? app.type : 'web'; // Return web as default if app not found
+    },
+    isAllAppsSelected(permissionSetId) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (!permissionSet) return false;
+      
+      // Get all available apps that aren't selected in other permission sets
+      const availableApps = this.appOptions.filter(app => 
+        !this.isAppSelectedInOtherSet(app.id, permissionSetId)
+      );
+      
+      // Check if all available apps are selected
+      return permissionSet.selectedApps.length === availableApps.length && 
+             availableApps.every(app => permissionSet.selectedApps.includes(app.id));
+    },
+    clearAllApps(permissionSetId) {
+      const permissionSet = this.permissionSets.find(set => set.id === permissionSetId);
+      if (permissionSet) {
+        permissionSet.selectedApps = [];
+      }
     }
   },
   mounted() {
@@ -2590,7 +2737,7 @@ h3 {
 .permissions-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 16px;
 }
 
 .permissions-section h4 {
@@ -3650,4 +3797,46 @@ h3 {
   background: #E2E8F0;
   margin: 0;
 }
+
+.all-apps-pill {
+  background: #EBF8FF;
+  border-color: #E2E8F0;
+  color: #128297;
+  font-weight: 500;
+}
+
+.all-apps-pill .remove-pill {
+  background: none;
+  border: none;
+  color: #4A5568;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.all-apps-pill .remove-pill:hover {
+  color: #2D3748;
+}
+
+.error-message {
+  color: #E53E3E;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ... existing styles ... */
+.input-wrapper.error {
+  border-color: #E53E3E;
+}
+
+.error-message {
+  color: #E53E3E;
+  font-size: 12px;
+  margin-top: 4px;
+}
+/* ... existing styles ... */
 </style> 
