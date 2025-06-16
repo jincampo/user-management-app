@@ -2750,12 +2750,12 @@ h3 {
 .section-description {
   font-size: 14px;
   color: #4A5568;
-  margin: 0 0 24px 0;
+  margin: 0 0 12px 0;
 }
 
 .roles-section {
   position: relative;
-  margin-top: 24px;
+  margin-top: 0px;
 }
 
 .roles-section h6 {
@@ -2777,18 +2777,18 @@ h3 {
 }
 
 .role-group {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   display: flex;
 }
 
 .role-header {
   display: flex;
   width: 100%;
-  min-height: 120px;
 }
 
 .icon-wrapper {
-  padding: 16px;
+  padding: 8px;
+  padding-right: 0px;
   display: flex;
   align-items: flex-start;
 }
@@ -2806,7 +2806,7 @@ h3 {
 
 .role-content {
   flex: 1;
-  padding: 16px 0;
+  padding: 8px 0;
 }
 
 .role-title {
