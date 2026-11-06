@@ -1788,7 +1788,45 @@ export default {
       });
 
       this.$emit('users-invited', invitedUsers);
+      this.trackUsersInvited(invitedUsers);
       this.close();
+    },
+    // Pendo Track Event: fires once per completed invite with counts and categories only (no invitee emails)
+    trackUsersInvited(invitedUsers) {
+      try {
+        if (!window.pendo || typeof window.pendo.track !== 'function') return;
+
+        const roleCategories = ['guides', 'tagging', 'segments', 'listen', 'roadmaps'];
+        const permissionSets = this.permissionSets || [];
+        const totalAppsAssigned = permissionSets.reduce(
+          (total, set) => total + (set.selectedApps || []).length,
+          0
+        );
+        const totalRolesAssigned = permissionSets.reduce(
+          (total, set) => total + roleCategories.reduce(
+            (count, category) => count + ((set.roles && set.roles[category]) || []).length,
+            0
+          ),
+          0
+        );
+        const roleCategoriesAssigned = roleCategories.filter(category =>
+          permissionSets.some(set => ((set.roles && set.roles[category]) || []).length > 0)
+        );
+
+        window.pendo.track('users_invited', {
+          inviteeCount: invitedUsers.length,
+          permissionType: this.selectedPermission || 'unknown',
+          isAdmin: this.selectedPermission === 'admin',
+          permissionSetCount: permissionSets.length,
+          totalAppsAssigned,
+          totalRolesAssigned,
+          roleCategoriesAssigned,
+          teamCount: (this.selectedTeams || []).length,
+          copiedFromExistingUser: this.selectedPermission === 'copy' && !!this.selectedUser
+        });
+      } catch (err) {
+        // Tracking must never break the invite flow
+      }
     },
     resetForm() {
       this.permissionSets = [{
